@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Liza Festas</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="stylesheet" href="css/global.css">
+<link rel="stylesheet" href="css/sidebar.css">
+<link rel="stylesheet" href="css/dashboard.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/calendario.css">
+</head>
+<body>
+
+<!-- ===================== LOGIN ===================== -->
+<div id="loginScreen" style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#1C1C1E;position:fixed;inset:0;z-index:9999">
+  <div style="background:white;border-radius:16px;padding:2.5rem;max-width:360px;width:100%">
+    <h2 style="font-family:'Cormorant Garamond',serif;text-align:center;margin-bottom:1.5rem;letter-spacing:2px">LIZA FESTAS</h2>
+    <input id="loginUser" placeholder="Usuário" style="width:100%;padding:0.6rem 0.9rem;margin-bottom:0.75rem;border:1px solid var(--border);border-radius:8px;box-sizing:border-box">
+    <input id="loginPass" type="password" placeholder="Senha" style="width:100%;padding:0.6rem 0.9rem;margin-bottom:0.75rem;border:1px solid var(--border);border-radius:8px;box-sizing:border-box" onkeydown="if(event.key==='Enter')fazerLogin()">
+    <div id="loginErro" style="display:none;color:var(--danger);font-size:12px;margin-bottom:0.75rem">Usuário ou senha inválidos.</div>
+    <button class="btn btn-primary" style="width:100%" onclick="fazerLogin()">Entrar</button>
+  </div>
+</div>
+
+<!-- ===================== APP ===================== -->
+<div id="appSidebar" class="app-sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">LF</div>
+    <div>
+      <div class="sidebar-title">Liza Figueiredo</div>
+      <div class="sidebar-subtitle">FESTAS &amp; EVENTOS</div>
+    </div>
+    <button onclick="toggleDrawer()" id="btnHamburger" class="btn-hamburger">☰</button>
+  </div>
+
+  <div class="nav-group-label">PRINCIPAL</div>
+  <div class="nav-tab active" onclick="showSection('dashboard')">📊 Dashboard <span class="nav-badge" id="badgeAtend">0</span></div>
+  <div class="nav-tab" onclick="showSection('agenda')">📅 Agenda <span class="nav-badge" id="badgeAgenda">0</span></div>
+  <div class="nav-tab" onclick="showSection('atendimentos')">✨ Atendimentos <span class="nav-badge" id="badgeAtend2">0</span></div>
+
+  <div class="nav-group-label">GESTÃO</div>
+  <div class="nav-tab" onclick="showSection('festas')">🎉 Festas <span class="nav-badge" id="badgeServ">0</span></div>
+  <div class="nav-tab" onclick="showSection('materiais')">🧴 Materiais <span class="nav-badge" id="badgeMat">0</span></div>
+  <div class="nav-tab" onclick="showSection('despAdm')">🏢 Desp. Adm. <span class="nav-badge" id="badgeDespAdm">0</span></div>
+  <div class="nav-tab" onclick="showSection('despExtra')">💸 Despesas <span class="nav-badge" id="badgeDespExtra">0</span></div>
+  <div class="nav-tab" onclick="showSection('temas')">🎨 Temas <span class="nav-badge" id="badgeTemas">0</span></div>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-user" onclick="fazerLogout()">
+      <div class="sidebar-avatar" id="sidebarAvatarLetter">L</div>
+      <span id="sidebarUserName">Liza</span>
+    </div>
+  </div>
+</div>
+<div id="sidebarOverlay" class="sidebar-overlay" onclick="fecharDrawer()"></div>
+
+<div class="app-content">
+  <div class="app-topbar">
+    <button onclick="toggleSidebar()" class="btn-toggle-sidebar">☰</button>
+    <button onclick="toggleDrawer()" class="btn-hamburger-mobile">☰</button>
+    <span id="lastSave" style="font-size:12px;color:var(--text-light)"></span>
+    <span id="headerDate" style="margin-left:auto;font-size:13px"></span>
+    <button class="btn btn-secondary btn-sm" onclick="document.getElementById('log-panel').style.display='block'">📋 Relatório</button>
+    <button class="btn btn-secondary btn-sm" onclick="gerenciarUsuarios()">👥 Usuários</button>
+    <button class="btn btn-secondary btn-sm" onclick="exportData()">⬇ Backup</button>
+    <label class="btn btn-secondary btn-sm" style="cursor:pointer">⬆ Restaurar<input type="file" accept=".json" style="display:none" onchange="importData(event)"></label>
+  </div>
+
+  <!-- ===================== DASHBOARD ===================== -->
+  <section id="sec-dashboard" class="section active">
+    <h2>Dashboard</h2>
+    <p class="section-sub">VISÃO GERAL DAS FESTAS</p>
+    <div class="period-filters">
+      <button class="period-btn active" onclick="setPeriod('hoje',this)">Hoje</button>
+      <button class="period-btn" onclick="setPeriod('semana',this)">7 dias</button>
+      <button class="period-btn" onclick="setPeriod('mes',this)">Este mês</button>
+      <button class="period-btn" onclick="setPeriod('tudo',this)">Tudo</button>
+    </div>
+    <div id="dashCards" class="summary-cards"></div>
+
+    <div class="panel">
+      <div class="panel-header">🎨 Status dos Agendamentos</div>
+      <div id="statusAgendaPanel"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">🎉 Festas do Dia</div>
+      <div id="sessoesHojePanel"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">🏆 Top 5 Festas</div>
+      <div id="top5Panel"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">💳 Pagamentos</div>
+      <div id="pagtoPanel"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">🕐 Últimos Atendimentos</div>
+      <div id="ultimosAtend"></div>
+    </div>
+  </section>
+
+  <!-- ===================== AGENDA ===================== -->
+  <section id="sec-agenda" class="section">
+    <h2>Agenda</h2>
+    <div class="form-card">
+      <div class="form-grid">
+        <div class="form-group"><label>Cliente</label><input id="ag-cliente"></div>
+        <div class="form-group"><label>Telefone</label><input id="ag-telefone" onkeyup="mascaraTel(this)"></div>
+        <div class="form-group"><label>Data</label><input type="date" id="ag-data"></div>
+        <div class="form-group"><label>Data de retirada</label><input type="date" id="ag-data-retirada"></div>
+        <div class="form-group"><label>Hora retirada</label><input type="time" id="ag-hora-retirada"></div>
+        <div class="form-group"><label>Sinal (R$)</label><input type="number" id="ag-sinal" step="0.01"></div>
+        <div class="form-group"><label>Tema</label>
+          <select id="ag-tema"><option value="">Nenhum</option></select>
+        </div>
+        <div class="form-group"><label>Status</label>
+          <select id="ag-status-cor">
+            <option value="reservado">🟢 Reservado</option>
+            <option value="alugado">🔴 Alugado</option>
+            <option value="devolveu">⚫ Devolveu</option>
+            <option value="personalizado">🟣 Personalizado</option>
+            <option value="credito">🟠 Crédito</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label>Festas</label><input id="ag-servico-busca" placeholder="Buscar festa..." onkeyup="renderServiceChips()"></div>
+      <div id="serviceChips" class="chips-wrap"></div>
+      <div class="form-group"><label>Materiais</label><input id="ag-material-busca" placeholder="Buscar material..." onkeyup="renderServiceChips()"></div>
+      <div id="materialChipsAgenda" class="chips-wrap"></div>
+      <div id="ag-material-qtd-wrap"></div>
+      <div class="form-group"><label>Observações</label><textarea id="ag-obs"></textarea></div>
+      <button class="btn btn-primary" onclick="salvarAgendamento()">+ Agendar</button>
+      <button class="btn btn-secondary" onclick="limparFormAgenda()">Limpar</button>
+    </div>
+
+    <div class="panel" style="margin-bottom:1.25rem">
+      <div class="panel-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <button class="btn btn-secondary btn-sm" onclick="calNavegar(-1)">‹</button>
+          <span id="calTitulo" style="font-weight:600"></span>
+          <button class="btn btn-secondary btn-sm" onclick="calNavegar(1)">›</button>
+          <button class="btn btn-secondary btn-sm" onclick="calHoje()">Hoje</button>
+        </div>
+        <div style="display:flex;gap:4px">
+          <button id="calBtnMes" class="agenda-btn active" onclick="calSetView('mes')">Mês</button>
+          <button id="calBtnSem" class="agenda-btn" onclick="calSetView('semana')">Semana</button>
+        </div>
+      </div>
+      <div id="calGrid" style="padding:1rem"></div>
+    </div>
+
+    <div class="agenda-filtros">
+      <input id="agBuscaCliente" placeholder="Buscar cliente..." onkeyup="renderAgenda()">
+      <input type="date" id="agFiltroRetirada" onchange="renderAgenda()" title="Filtrar por data de retirada">
+      <button class="agenda-btn active" onclick="setAgendaFiltro('tudo',this)">Tudo</button>
+      <button class="agenda-btn" onclick="setAgendaFiltro('hoje',this)">Hoje</button>
+      <button class="agenda-btn" onclick="setAgendaFiltro('pendentes',this)">Pendentes</button>
+      <button class="agenda-btn" onclick="setAgendaFiltro('realizados',this)">Realizados</button>
+    </div>
+    <div id="agendaLista"></div>
+  </section>
+
+  <!-- ===================== ATENDIMENTOS ===================== -->
+  <section id="sec-atendimentos" class="section">
+    <h2>Atendimentos</h2>
+    <div class="form-card">
+      <div class="form-grid">
+        <div class="form-group"><label>Cliente</label><input id="atend-cliente"></div>
+        <div class="form-group"><label>Data</label><input type="date" id="atend-data"></div>
+        <div class="form-group"><label>Valor (R$)</label><input type="number" id="atend-valor" step="0.01"></div>
+        <div class="form-group"><label>Pagamento</label>
+          <select id="atend-pagto">
+            <option value="pix">PIX</option><option value="dinheiro">Dinheiro</option>
+            <option value="cartao_debito">Cartão Débito</option><option value="cartao_credito">Cartão Crédito</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label>Festas</label><input id="atend-servico-busca" placeholder="Buscar festa..." onkeyup="renderServiceChips()"></div>
+      <div id="serviceChips2" class="chips-wrap"></div>
+      <div class="form-group"><label>Materiais usados</label><input id="atend-material-busca" placeholder="Buscar material..." onkeyup="renderServiceChips()"></div>
+      <div id="materialChips" class="chips-wrap"></div>
+      <div id="atend-material-qtd-wrap"></div>
+      <div class="form-group"><label>Observações</label><textarea id="atend-obs" placeholder="Observações do atendimento..."></textarea></div>
+      <button class="btn btn-primary" onclick="registrarAtendimento()">✓ Registrar Atendimento</button>
+      <button class="btn btn-secondary" onclick="limparFormAtendimento()">Limpar</button>
+    </div>
+
+    <div class="filtros-row">
+      <input id="filtAtendCliente" placeholder="Buscar cliente..." onkeyup="renderAtendimentos()">
+      <input type="date" id="filtAtendDataIni" onchange="renderAtendimentos()">
+      <input type="date" id="filtAtendDataFim" onchange="renderAtendimentos()">
+      <select id="filtAtendPagto" onchange="renderAtendimentos()">
+        <option value="">Todos pagamentos</option>
+        <option value="pix">PIX</option><option value="dinheiro">Dinheiro</option>
+        <option value="cartao_debito">Débito</option><option value="cartao_credito">Crédito</option>
+      </select>
+    </div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th></th><th>Data</th><th>Cliente</th><th>Festa</th><th>Status</th><th>Pagamento</th><th>Valor</th><th></th></tr></thead>
+      <tbody id="tbodyAtend"></tbody>
+    </table>
+    </div>
+  </section>
+
+  <!-- ===================== FESTAS ===================== -->
+  <section id="sec-festas" class="section">
+    <h2>Festas</h2>
+    <div class="form-card">
+      <div class="form-grid">
+        <div class="form-group"><label>Nome</label><input id="serv-nome"></div>
+        <div class="form-group"><label>Descrição</label><input type="text" id="serv-descricao"></div>
+        <div class="form-group"><label>Preço (R$)</label><input type="number" id="serv-preco" step="0.01"></div>
+        <div class="form-group"><label>Status</label>
+          <select id="serv-status"><option value="ativo">Ativo</option><option value="inativo">Inativo</option></select>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="salvarFesta()">+ Cadastrar Festa</button>
+      <button class="btn btn-secondary" onclick="limparFormFesta()">Limpar</button>
+    </div>
+    <div class="filtros-row">
+      <input id="filtServNome" placeholder="Buscar festa..." onkeyup="renderFestas()">
+      <select id="filtServStatus" onchange="renderFestas()">
+        <option value="">Todos status</option><option value="ativo">Ativo</option><option value="inativo">Inativo</option>
+      </select>
+    </div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th></th><th>Nome</th><th>Descrição</th><th>Preço</th><th>Status</th><th></th></tr></thead>
+      <tbody id="tbodyServ"></tbody>
+    </table>
+    </div>
+  </section>
+
+  <!-- ===================== MATERIAIS ===================== -->
+  <section id="sec-materiais" class="section">
+    <h2>Materiais</h2>
+    <div class="form-card">
+      <div class="form-grid">
+        <div class="form-group"><label>Nome</label><input id="mat-nome"></div>
+        <div class="form-group"><label>Fornecedor</label><input id="mat-fornecedor"></div>
+        <div class="form-group"><label>Custo (R$)</label><input type="number" id="mat-custo" step="0.01"></div>
+        <div class="form-group"><label>Quantidade</label><input type="number" id="mat-qtd"></div>
+        <div class="form-group"><label>Estoque mínimo</label><input type="number" id="mat-min"></div>
+        <div class="form-group"><label>Unidade</label>
+          <select id="mat-unidade"><option value="un">un</option><option value="ml">ml</option><option value="g">g</option><option value="L">L</option><option value="kg">kg</option><option value="cx">cx</option></select>
+        </div>
+        <div class="form-group"><label>Grade</label><input id="mat-grade" placeholder="Ex: P, M, G"></div>
+      </div>
+      <button class="btn btn-primary" onclick="salvarMaterial()">+ Cadastrar Material</button>
+      <button class="btn btn-secondary" onclick="limparFormMat()">Limpar</button>
+    </div>
+    <input id="filtMatNome" placeholder="Buscar material..." onkeyup="renderMateriais()">
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th></th><th>Nome</th><th>Fornecedor</th><th>Custo</th><th>Estoque</th><th>Grade</th><th>Mín.</th><th>Situação</th><th></th></tr></thead>
+      <tbody id="tbodyMat"></tbody>
+    </table>
+    </div>
+  </section>
+
+  <!-- ===================== DESPESAS ADMINISTRATIVAS ===================== -->
+  <section id="sec-despAdm" class="section">
+    <h2>Despesas Administrativas</h2>
+    <div class="form-card">
+      <div class="form-grid">
+        <div class="form-group"><label>Descrição</label><input id="dadm-desc"></div>
+        <div class="form-group"><label>Categoria</label><input id="dadm-categoria"></div>
+        <div class="form-group"><label>Valor (R$)</label><input type="number" id="dadm-valor" step="0.01"></div>
+        <div class="form-group"><label>Data</label><input type="date" id="dadm-data"></div>
+      </div>
+      <button class="btn btn-primary" onclick="salvarDespAdm()">+ Registrar</button>
+    </div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Valor</th><th></th></tr></thead>
+      <tbody id="tbodyDespAdm"></tbody>
+    </table>
+    </div>
+  </section>
+
+  <!-- ===================== DESPESAS EXTRAS ===================== -->
+  <section id="sec-despExtra" class="section">
+    <h2>Despesas</h2>
+    <div class="form-card">
+      <div class="form-grid">
+        <div class="form-group"><label>Descrição</label><input id="dext-desc"></div>
+        <div class="form-group"><label>Valor (R$)</label><input type="number" id="dext-valor" step="0.01"></div>
+        <div class="form-group"><label>Data</label><input type="date" id="dext-data"></div>
+      </div>
+      <button class="btn btn-primary" onclick="salvarDespExtra()">+ Registrar</button>
+    </div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Data</th><th>Descrição</th><th>Valor</th><th></th></tr></thead>
+      <tbody id="tbodyDespExtra"></tbody>
+    </table>
+    </div>
+  </section>
+
+  <!-- ===================== TEMAS ===================== -->
+  <section id="sec-temas" class="section">
+    <h2>Temas</h2>
+    <div class="form-card">
+      <div class="form-grid">
+        <div class="form-group"><label>Nome do tema</label><input id="tema-nome"></div>
+        <div class="form-group"><label>Descrição</label><input id="tema-descricao"></div>
+      </div>
+      <div class="form-group">
+        <label>Festas incluídas</label>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="abrirSeletorFestasTema()">🎉 Selecionar festas (<span id="temaFestasCount">0</span>)</button>
+      </div>
+      <div class="form-group">
+        <label>Fotos do tema</label>
+        <input type="file" id="tema-fotos-input" accept="image/*" multiple onchange="onTemaFotosSelecionadas(event)">
+        <div id="temaFotosPreview" class="chips-wrap" style="margin-top:8px"></div>
+      </div>
+      <button class="btn btn-primary" onclick="salvarTema()">+ Cadastrar Tema</button>
+      <button class="btn btn-secondary" onclick="limparFormTema()">Limpar</button>
+    </div>
+
+    <div class="filtros-row">
+      <input id="filtTemaNome" placeholder="Buscar tema..." onkeyup="renderTemas()">
+      <select id="filtTemaFesta" onchange="renderTemas()">
+        <option value="">Todas as festas</option>
+      </select>
+    </div>
+    <div id="temasLista" style="margin-top:1rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem"></div>
+  </section>
+
+</div>
+
+<!-- ===================== MODAL: STATUS AGENDA ===================== -->
+<div id="statusAgendaModal" class="modal" style="display:none">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span id="statusAgendaModalTitle"></span>
+      <button onclick="document.getElementById('statusAgendaModal').style.display='none'">✕</button>
+    </div>
+    <div id="statusAgendaModalBody" class="modal-body"></div>
+  </div>
+</div>
+
+<!-- ===================== TOAST / LOG ===================== -->
+<div id="toast" class="toast"></div>
+<div id="log-panel" class="log-panel" style="display:none">
+  <div class="log-header">
+    <span>📋 Relatório de Atividade</span>
+    <button onclick="toggleLog()">✕</button>
+  </div>
+  <div id="log-entries" class="log-entries"></div>
+</div>
+
+<!-- ===================== SCRIPTS (ORDEM IMPORTA) ===================== -->
+<script src="js/config.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/db.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/festas.js"></script>
+<script src="js/materiais.js"></script>
+<script src="js/atendimentos.js"></script>
+<script src="js/financeiro.js"></script>
+<script src="js/whatsapp.js"></script>
+<script src="js/agenda.js"></script>
+<script src="js/calendario.js"></script>
+<script src="js/temas.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
