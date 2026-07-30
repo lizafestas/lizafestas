@@ -1,0 +1,75 @@
+.app-sidebar {
+  width: 240px; background: #1C1C1E; color: #FAF0F2; min-height: 100vh;
+  position: fixed; top: 0; left: 0; display: flex; flex-direction: column;
+  transition: width .2s; z-index: 100;
+}
+.app-sidebar.mini { width: 68px; }
+.app-sidebar.mini .sidebar-title, .app-sidebar.mini .sidebar-subtitle,
+.app-sidebar.mini .nav-tab span:not(.nav-badge), .app-sidebar.mini .nav-group-label,
+.app-sidebar.mini .nav-tab { font-size: 0; }
+.app-sidebar.mini .nav-tab { text-align: center; }
+
+.sidebar-header { display: flex; align-items: center; gap: 10px; padding: 1.25rem 1rem; border-bottom: 1px solid #2C2C2E; }
+.sidebar-logo {
+  width: 38px; height: 38px; border-radius: 50%; background: var(--rose);
+  display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0;
+}
+.sidebar-title { font-family: 'Cormorant Garamond', serif; font-size: 15px; letter-spacing: 1px; }
+.sidebar-subtitle { font-size: 9px; letter-spacing: 2px; color: #9A8A90; }
+.btn-hamburger { display: none; margin-left: auto; background: none; border: none; color: #FAF0F2; font-size: 18px; cursor: pointer; }
+
+.nav-group-label { font-size: 10px; letter-spacing: 2px; color: #6A5A60; padding: 1rem 1rem 0.4rem; text-transform: uppercase; }
+.nav-tab {
+  display: flex; align-items: center; gap: 10px; padding: 0.65rem 1rem; cursor: pointer;
+  font-size: 13px; color: #D8C8CE; transition: background .15s;
+}
+.nav-tab:hover { background: #2C2C2E; }
+.nav-tab.active { background: var(--rose); color: #fff; }
+.nav-badge {
+  margin-left: auto; background: rgba(255,255,255,0.15); padding: 1px 7px;
+  border-radius: 10px; font-size: 10px;
+}
+
+.sidebar-footer { margin-top: auto; padding: 1rem; border-top: 1px solid #2C2C2E; }
+.sidebar-user { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 13px; }
+.sidebar-avatar {
+  width: 30px; height: 30px; border-radius: 50%; background: var(--rose);
+  display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px;
+}
+
+.sidebar-overlay { display: none; }
+.app-content { margin-left: 240px; padding: 1.5rem; transition: margin-left .2s; }
+.app-content.mini { margin-left: 68px; }
+
+.app-topbar {
+  display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; flex-wrap: wrap;
+}
+.btn-toggle-sidebar { background: none; border: none; font-size: 18px; cursor: pointer; }
+.btn-hamburger-mobile { display: none; background: none; border: none; font-size: 18px; cursor: pointer; }
+
+@media (max-width: 768px) {
+  .app-sidebar, .app-sidebar.mini {
+    transform: translateX(-100%);
+    transition: transform .25s ease;
+    width: 240px;
+  }
+  .app-sidebar.drawer-aberto, .app-sidebar.mini.drawer-aberto {
+    transform: translateX(0);
+  }
+  /* Ignora o "modo mini" do desktop dentro do drawer — sempre mostra o menu completo */
+  .app-sidebar.mini .sidebar-title, .app-sidebar.mini .sidebar-subtitle,
+  .app-sidebar.mini .nav-tab span:not(.nav-badge), .app-sidebar.mini .nav-group-label,
+  .app-sidebar.mini .nav-tab {
+    font-size: inherit;
+  }
+  .app-sidebar.mini .nav-tab { text-align: left; }
+  .btn-hamburger { display: block; }
+  .btn-hamburger-mobile { display: block; }
+  .btn-toggle-sidebar { display: none; }
+  .app-content, .app-content.mini { margin-left: 0; padding: 1rem; }
+  .sidebar-overlay {
+    display: none;
+    position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 99;
+  }
+  .sidebar-overlay.ativo { display: block; }
+}
