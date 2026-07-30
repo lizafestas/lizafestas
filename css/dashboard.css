@@ -1,0 +1,36 @@
+.period-filters { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.period-btn {
+  padding: 6px 16px; border-radius: 20px; border: 1px solid var(--border);
+  background: #fff; cursor: pointer; font-size: 12px; color: var(--text-light);
+}
+.period-btn.active { background: var(--rose); border-color: var(--rose); color: #fff; }
+
+.summary-cards { display: grid; grid-template-columns: repeat(auto-fit,minmax(180px,1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+.summary-card { background: #fff; border-radius: 12px; padding: 1.25rem; border: 1px solid var(--border); }
+.card-icon { font-size: 20px; margin-bottom: 6px; }
+.card-label { font-size: 11px; color: var(--text-light); text-transform: uppercase; letter-spacing: 1px; }
+.card-value { font-size: 24px; font-weight: 700; margin: 4px 0; }
+.card-value.gold { color: var(--gold); }
+.card-value.green { color: var(--success); }
+.card-value.red { color: var(--danger); }
+.card-sub { font-size: 11px; color: var(--text-light); }
+
+.panel { background: #fff; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 1.25rem; overflow: hidden; }
+.panel-header { padding: 1rem 1.25rem; font-weight: 600; font-size: 13px; border-bottom: 1px solid var(--border); background: var(--cream); }
+.panel > div:not(.panel-header) { padding: 0.5rem 1.25rem 1.25rem; }
+
+.top5-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #F5EEF0; }
+.top5-rank { width: 22px; height: 22px; border-radius: 50%; background: var(--rose-light); color: var(--rose-dark); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+.top5-info { flex: 1; min-width: 100px; }
+.top5-name { font-size: 13px; font-weight: 600; }
+.top5-cat { font-size: 11px; color: var(--text-light); }
+.top5-bar-wrap { flex: 2; }
+.top5-bar { background: #F0E8EA; border-radius: 6px; height: 6px; overflow: hidden; }
+.top5-bar-fill { background: var(--rose); height: 100%; }
+.top5-count { font-size: 12px; font-weight: 600; width: 32px; text-align: right; }
+
+.pagto-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #F5EEF0; }
+.pagto-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.pagto-label { flex: 1; font-size: 13px; }
+.pagto-value { font-size: 13px; font-weight: 600; }
+.pagto-pct { font-size: 11px; color: var(--text-light); width: 36px; text-align: right; }
