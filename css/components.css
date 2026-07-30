@@ -1,0 +1,20 @@
+.chips-wrap { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1rem; }
+.service-chip, .material-chip {
+  padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border);
+  background: #fff; font-size: 12px; cursor: pointer; transition: all .15s;
+}
+.service-chip:hover, .material-chip:hover { border-color: var(--rose); }
+.service-chip.selected, .material-chip.selected { background: var(--rose); border-color: var(--rose); color: #fff; }
+
+.agenda-filtros { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; align-items: center; }
+.agenda-filtros input { flex: 1; min-width: 160px; }
+.agenda-btn {
+  padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border);
+  background: #fff; cursor: pointer; font-size: 12px; color: var(--text-light);
+}
+.agenda-btn.active { background: var(--rose); border-color: var(--rose); color: #fff; }
+
+.card { background: #fff; border-radius: 12px; padding: 1rem 1.25rem; border: 1px solid var(--border); }
+
+.section { display: none; }
+.section.active { display: block; }
