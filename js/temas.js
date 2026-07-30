@@ -1,16 +1,18 @@
 /* =====================================================
    LIZA FESTAS — temas.js
-   Catálogo de temas: festas vinculadas, fotos sob demanda,
+   Catálogo de temas: festas vinculadas, fotos sob demanda
+   (armazenadas no Supabase Storage, não mais em base64),
    envio WhatsApp
    ===================================================== */
 
 let _temaFestaIdsSelecionadas = [];
-let _temaFotosNovas = []; // [{id, nome, dataUrl}]
+let _temaFotosNovas = []; // [{id, nome, file, previewUrl}] — file/previewUrl só existem localmente até o upload
 
 function limparFormTema() {
   document.getElementById('tema-nome').value = '';
   document.getElementById('tema-descricao').value = '';
   _temaFestaIdsSelecionadas = [];
+  _temaFotosNovas.forEach(f => { if (f.previewUrl) URL.revokeObjectURL(f.previewUrl); });
   _temaFotosNovas = [];
   document.getElementById('temaFestasCount').textContent = '0';
   document.getElementById('temaFotosPreview').innerHTML = '';
@@ -42,28 +44,76 @@ function _toggleFestaTemaTmp(id, checked) {
   else { _temaFestaIdsSelecionadas = _temaFestaIdsSelecionadas.filter(x => x !== id); }
 }
 
-// ===================== FOTOS (cadastro) =====================
+// ===================== COMPRESSÃO E UPLOAD PRO STORAGE =====================
+// Redimensiona pra no máximo 1200px de largura e recomprime em JPEG ~80% —
+// reduz uma foto de celular (3-5MB) pra ~150-400KB antes de subir.
+function _comprimirImagem(file, maxWidth = 1200, qualidade = 0.8) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth; }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Falha ao comprimir imagem')), 'image/jpeg', qualidade);
+      };
+      img.onerror = () => reject(new Error('Arquivo não é uma imagem válida'));
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function _uploadFotoTema(temaId, file) {
+  const blob = await _comprimirImagem(file);
+  const caminho = temaId + '/' + uid() + '.jpg';
+  const resp = await fetch(SUPA_URL + '/storage/v1/object/temas-fotos/' + caminho, {
+    method: 'POST',
+    headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'image/jpeg' },
+    body: blob
+  });
+  if (!resp.ok) throw new Error('upload foto: HTTP ' + resp.status);
+  const url = SUPA_URL + '/storage/v1/object/public/temas-fotos/' + caminho;
+  return { id: uid(), nome: file.name, url };
+}
+
+async function _excluirFotoStorage(url) {
+  const marcador = '/temas-fotos/';
+  const idx = (url||'').indexOf(marcador);
+  if (idx === -1) return; // foto antiga em base64, não tem arquivo no Storage pra apagar
+  const caminho = url.substring(idx + marcador.length);
+  try {
+    await fetch(SUPA_URL + '/storage/v1/object/temas-fotos/' + caminho, {
+      method: 'DELETE',
+      headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY }
+    });
+  } catch(e) { /* se falhar, não trava o resto do fluxo */ }
+}
+
+// ===================== FOTOS (cadastro — preview local antes do upload) =====================
 function onTemaFotosSelecionadas(event) {
   const files = Array.from(event.target.files || []);
   files.forEach(file => {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      _temaFotosNovas.push({ id: uid(), nome: file.name, dataUrl: e.target.result });
-      _renderTemaFotosPreview();
-    };
-    reader.readAsDataURL(file);
+    _temaFotosNovas.push({ id: uid(), nome: file.name, file, previewUrl: URL.createObjectURL(file) });
   });
+  _renderTemaFotosPreview();
 }
 function _renderTemaFotosPreview() {
   const wrap = document.getElementById('temaFotosPreview');
   if (!wrap) return;
   wrap.innerHTML = _temaFotosNovas.map(f => `
     <div style="position:relative;width:70px">
-      <img src="${f.dataUrl}" style="width:70px;height:70px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">
+      <img src="${f.previewUrl}" style="width:70px;height:70px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">
       <button onclick="_removerFotoTemaTmp('${f.id}')" style="position:absolute;top:-6px;right:-6px;background:var(--danger);color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer">✕</button>
     </div>`).join('');
 }
 function _removerFotoTemaTmp(id) {
+  const f = _temaFotosNovas.find(x => x.id === id);
+  if (f && f.previewUrl) URL.revokeObjectURL(f.previewUrl);
   _temaFotosNovas = _temaFotosNovas.filter(f => f.id !== id);
   _renderTemaFotosPreview();
 }
@@ -72,12 +122,25 @@ function _removerFotoTemaTmp(id) {
 async function salvarTema() {
   const nome = document.getElementById('tema-nome').value.trim();
   if (!nome) { showToast('Preencha o nome do tema!'); return; }
+  const id = uid();
+
+  let fotos = [];
+  if (_temaFotosNovas.length) {
+    showToast('Enviando fotos...');
+    try {
+      fotos = await Promise.all(_temaFotosNovas.map(f => _uploadFotoTema(id, f.file)));
+    } catch(e) {
+      showToast('Erro ao enviar fotos: ' + e.message);
+      return;
+    }
+  }
+
   const novo = {
-    id: uid(),
+    id,
     nome,
     descricao: document.getElementById('tema-descricao').value,
     festaIds: [..._temaFestaIdsSelecionadas],
-    fotos: [..._temaFotosNovas]
+    fotos
   };
   db.temas.push(novo);
   saveData(); renderAll(); limparFormTema();
@@ -213,6 +276,9 @@ async function _garantirFotosTema(temaId) {
   return t;
 }
 
+// Fotos antigas (migração anterior) têm {dataUrl}; fotos novas têm {url} (Storage). Ambas exibem igual.
+function _fotoSrc(f) { return f.url || f.dataUrl; }
+
 async function verFotosTema(temaId) {
   showToast('Carregando fotos...');
   const t = await _garantirFotosTema(temaId);
@@ -233,7 +299,7 @@ function _renderModalFotosTema(t) {
       <div class="modal-body" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px">
         ${t.fotos.map(f => `
           <div style="position:relative">
-            <img src="${f.dataUrl}" style="width:100%;height:120px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">
+            <img src="${_fotoSrc(f)}" style="width:100%;height:120px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">
             <button onclick="excluirFotoTema('${t.id}','${f.id}')" title="Excluir esta foto" style="position:absolute;top:6px;right:6px;background:var(--danger);color:#fff;border:none;border-radius:50%;width:24px;height:24px;font-size:12px;cursor:pointer">✕</button>
           </div>`).join('')}
       </div>
@@ -245,8 +311,10 @@ async function excluirFotoTema(temaId, fotoId) {
   if (!confirm('Excluir esta foto do tema?')) return;
   const t = db.temas.find(x => x.id === temaId);
   if (!t) return;
+  const foto = (t.fotos||[]).find(f => f.id === fotoId);
   t.fotos = (t.fotos||[]).filter(f => f.id !== fotoId);
   await dbAtualizar('temas', t);
+  if (foto && foto.url) await _excluirFotoStorage(foto.url);
   showToast('Foto excluída.');
   if (!t.fotos.length) { document.getElementById('modal-fotos-tema')?.remove(); return; }
   _renderModalFotosTema(t);
@@ -266,14 +334,14 @@ async function abrirAdicionarFotosTema(temaId) {
     const files = Array.from(event.target.files || []);
     if (!files.length) return;
     showToast('Enviando fotos...');
-    const novasFotos = await Promise.all(files.map(file => new Promise(resolve => {
-      const reader = new FileReader();
-      reader.onload = e => resolve({ id: uid(), nome: file.name, dataUrl: e.target.result });
-      reader.readAsDataURL(file);
-    })));
-    t.fotos = [...(t.fotos||[]), ...novasFotos];
-    await dbAtualizar('temas', t);
-    showToast('Fotos adicionadas ao tema!');
+    try {
+      const novasFotos = await Promise.all(files.map(file => _uploadFotoTema(temaId, file)));
+      t.fotos = [...(t.fotos||[]), ...novasFotos];
+      await dbAtualizar('temas', t);
+      showToast('Fotos adicionadas ao tema!');
+    } catch(e) {
+      showToast('Erro ao enviar fotos: ' + e.message);
+    }
   };
   input.click();
 }
@@ -287,7 +355,7 @@ async function abrirEnvioWhatsappTema(temaId) {
   const opcoes = t.fotos.map(f => `
     <label style="display:flex;align-items:center;gap:8px;padding:6px 4px;border-bottom:1px solid #f0e8ea;font-size:13px;cursor:pointer">
       <input type="checkbox" name="fotoWhatsTema" value="${f.id}">
-      <img src="${f.dataUrl}" style="width:40px;height:40px;object-fit:cover;border-radius:6px">
+      <img src="${_fotoSrc(f)}" style="width:40px;height:40px;object-fit:cover;border-radius:6px">
       ${f.nome}
     </label>`).join('');
 
@@ -325,6 +393,7 @@ async function _confirmarEnvioWhatsappTema(temaId) {
   }).filter(Boolean).join(', ');
   const texto = `Olá! 🎉 Segue o tema "${t.nome}"${t.descricao ? ' — '+t.descricao : ''}${festasNomes ? '\n\nInclui: '+festasNomes : ''}`;
 
+  const numeroInformado = !!_limparTelefone(numero);
   const urlWhats = (function() {
     const tel = _limparTelefone(numero);
     if (!tel) return 'https://wa.me/?text=' + encodeURIComponent(texto);
@@ -332,28 +401,56 @@ async function _confirmarEnvioWhatsappTema(temaId) {
     return 'https://wa.me/' + numComPais + '?text=' + encodeURIComponent(texto);
   })();
 
-  try {
-    const files = await Promise.all(fotos.map(async foto => {
-      const resp = await fetch(foto.dataUrl);
-      const blob = await resp.blob();
-      return new File([blob], foto.nome || 'tema.jpg', { type: blob.type });
-    }));
-    if (navigator.canShare && navigator.canShare({ files })) {
-      await navigator.share({ files, text: texto, title: t.nome });
-      return;
-    }
-  } catch(e) { /* segue pro fallback abaixo */ }
+  if (!numeroInformado) {
+    try {
+      const files = await Promise.all(fotos.map(async foto => {
+        const resp = await fetch(_fotoSrc(foto));
+        const blob = await resp.blob();
+        return new File([blob], foto.nome || 'tema.jpg', { type: blob.type });
+      }));
+      if (navigator.canShare && navigator.canShare({ files })) {
+        await navigator.share({ files, text: texto, title: t.nome });
+        return;
+      }
+    } catch(e) { /* segue pro fallback abaixo */ }
+  }
 
-  fotos.forEach((foto, i) => {
+  // Com número específico: tenta copiar a 1ª foto pra área de transferência (Ctrl+V cola direto na conversa)
+  let copiouParaClipboard = false;
+  if (numeroInformado && navigator.clipboard && window.ClipboardItem) {
+    try {
+      const resp = await fetch(_fotoSrc(fotos[0]));
+      let blob = await resp.blob();
+      if (blob.type !== 'image/png') {
+        const bitmap = await createImageBitmap(blob);
+        const canvas = document.createElement('canvas');
+        canvas.width = bitmap.width; canvas.height = bitmap.height;
+        canvas.getContext('2d').drawImage(bitmap, 0, 0);
+        blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+      }
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+      copiouParaClipboard = true;
+    } catch(e) { /* sem permissão de clipboard — segue pro download normal */ }
+  }
+
+  const fotosParaBaixar = copiouParaClipboard ? fotos.slice(1) : fotos;
+  fotosParaBaixar.forEach((foto, i) => {
     setTimeout(() => {
       const a = document.createElement('a');
-      a.href = foto.dataUrl;
+      a.href = _fotoSrc(foto);
       a.download = foto.nome || ('tema-'+(i+1)+'.jpg');
       a.click();
     }, i * 400);
   });
-  showToast(fotos.length > 1 ? 'Fotos baixadas — anexe elas manualmente na conversa do WhatsApp que vai abrir.' : 'Foto baixada — anexe ela manualmente na conversa do WhatsApp que vai abrir.');
+
+  if (copiouParaClipboard) {
+    showToast(fotos.length > 1
+      ? '1ª foto copiada! Cole com Ctrl+V na conversa. As outras foram baixadas para anexar.'
+      : 'Foto copiada! Cole com Ctrl+V dentro da conversa que vai abrir.');
+  } else {
+    showToast(fotos.length > 1 ? 'Fotos baixadas — anexe elas manualmente na conversa do WhatsApp que vai abrir.' : 'Foto baixada — anexe ela manualmente na conversa do WhatsApp que vai abrir.');
+  }
   setTimeout(() => {
     window.open(urlWhats, '_blank');
-  }, fotos.length * 400 + 600);
+  }, fotosParaBaixar.length * 400 + 600);
 }
