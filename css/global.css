@@ -1,0 +1,171 @@
+:root {
+  --rose: #D4A0A8;
+  --rose-dark: #B8828A;
+  --rose-light: #F5E6E8;
+  --cream: #FAF0F2;
+  --border: #E8DCE0;
+  --text: #2C1A22;
+  --text-light: #8A7A80;
+  --success: #4CAF50;
+  --danger: #E53935;
+  --gold: #C9A84C;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: 'Inter', -apple-system, sans-serif;
+  background: var(--cream);
+  color: var(--text);
+  font-size: 14px;
+}
+h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 26px;
+  letter-spacing: 1px;
+  margin: 0 0 4px;
+}
+.section-sub {
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--text-light);
+  text-transform: uppercase;
+  margin: 0 0 1.5rem;
+}
+
+/* ===== BUTTONS ===== */
+.btn {
+  padding: 0.55rem 1rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: opacity .15s;
+}
+.btn:hover { opacity: 0.85; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-primary { background: var(--rose); color: #fff; }
+.btn-secondary { background: #fff; border: 1px solid var(--border); color: var(--text); }
+.btn-danger { background: #FFEBEE; color: var(--danger); padding: 4px 8px; }
+.btn-edit { background: var(--rose-light); color: var(--rose-dark); padding: 4px 8px; }
+.btn-sm { padding: 4px 10px; font-size: 12px; }
+
+/* ===== FORMS ===== */
+.form-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+.form-group { display: flex; flex-direction: column; gap: 4px; }
+.form-group label {
+  font-size: 10px;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+input, select, textarea {
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: inherit;
+  background: #fff;
+  color: var(--text);
+}
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--rose);
+}
+textarea { resize: vertical; min-height: 60px; }
+
+.filtros-row { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.filtros-row input, .filtros-row select { flex: 1; min-width: 140px; }
+
+/* ===== TABLES ===== */
+.table-scroll { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.data-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; }
+.data-table th {
+  text-align: left;
+  padding: 10px 12px;
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--text-light);
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--border);
+}
+.data-table td { padding: 10px 12px; border-bottom: 1px solid #F5EEF0; font-size: 13px; }
+.data-row { cursor: pointer; }
+.data-row:hover { background: var(--cream); }
+.expand-icon { display: inline-block; transition: transform .15s; font-size: 10px; color: var(--text-light); }
+.expand-icon.open { transform: rotate(90deg); }
+.detail-row { display: none; }
+.detail-row.open { display: table-row; }
+.detail-row td { background: var(--cream); }
+.detail-box { display: grid; grid-template-columns: repeat(auto-fit,minmax(140px,1fr)); gap: 0.75rem; padding: 1rem; }
+.detail-field label { display: block; font-size: 10px; color: var(--text-light); text-transform: uppercase; margin-bottom: 2px; }
+.detail-field span { font-size: 13px; }
+.edit-form-row { display: flex; flex-direction: column; gap: 0.75rem; }
+
+/* ===== BADGES ===== */
+.badge-pill { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; }
+.badge-ativo { background: #E8F5E9; color: #2E7D32; }
+.badge-inativo { background: #F5F5F5; color: #9E9E9E; }
+.badge-pix { background: #E8F5E9; color: #2E7D32; }
+.badge-dinheiro { background: #FFF3E0; color: #E65100; }
+.badge-cartao { background: #E3F2FD; color: #1565C0; }
+
+/* ===== EMPTY STATE ===== */
+.empty-state { text-align: center; padding: 2.5rem 1rem; color: var(--text-light); }
+.empty-icon { font-size: 32px; margin-bottom: 8px; }
+
+/* ===== TOAST ===== */
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--text); color: #fff; padding: 10px 20px; border-radius: 8px;
+  font-size: 13px; opacity: 0; pointer-events: none; transition: all .25s; z-index: 10000;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ===== LOG PANEL ===== */
+.log-panel {
+  position: fixed; bottom: 0; right: 0; width: 380px; max-height: 300px;
+  background: #1C1C1E; color: #fff; border-radius: 12px 0 0 0; z-index: 9997; overflow: hidden;
+}
+.log-header { display: flex; justify-content: space-between; padding: 10px 14px; background: #2C2C2E; font-size: 12px; }
+.log-header button { background: none; border: none; color: #fff; cursor: pointer; }
+.log-entries { padding: 8px 14px; font-family: monospace; font-size: 11px; overflow-y: auto; max-height: 250px; }
+
+/* ===== MODAL ===== */
+.modal { position: fixed; inset: 0; background: rgba(44,26,34,0.7); z-index: 9998; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+.modal-box { background: #fff; border-radius: 16px; max-width: 700px; width: 100%; max-height: 90vh; overflow-y: auto; }
+.modal-header {
+  padding: 1.2rem 1.5rem; background: linear-gradient(135deg,#1C1C1E,#2C2C2E);
+  border-radius: 16px 16px 0 0; display: flex; justify-content: space-between; align-items: center;
+  color: #FAF0F2; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 2px;
+}
+.modal-header button { background: none; border: none; color: #FAF0F2; font-size: 20px; cursor: pointer; }
+.modal-body { padding: 1.5rem; }
+
+/* ===== RESPONSIVO — TABLET/CELULAR ===== */
+@media (max-width: 640px) {
+  body { font-size: 13px; }
+  h2 { font-size: 21px; }
+  .form-card, .panel-header, .modal-body, .cal-modal-body { padding: 1rem; }
+  .data-table { min-width: 560px; } /* força rolagem em vez de espremer colunas */
+  .modal-box, .cal-modal-box { max-width: 100%; }
+  .btn { padding: 0.6rem 0.9rem; font-size: 12px; }
+  .form-grid { grid-template-columns: 1fr; } /* 1 campo por linha no celular */
+  input, select, textarea { font-size: 16px; } /* evita zoom automático do iOS Safari ao focar */
+}
+@media (min-width: 641px) and (max-width: 900px) {
+  .form-grid { grid-template-columns: repeat(2, 1fr); } /* 2 colunas no tablet */
+}
