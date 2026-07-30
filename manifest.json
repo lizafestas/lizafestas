@@ -1,0 +1,9 @@
+{
+  "name": "Liza Festas",
+  "short_name": "LizaFestas",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#1C1C1E",
+  "theme_color": "#1C1C1E",
+  "icons": []
+}
