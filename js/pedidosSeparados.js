@@ -73,7 +73,8 @@ function renderPedidosSeparados() {
             ? '<button class="btn btn-primary btn-sm" onclick="abrirPickerSeparacao(\'' + ag.id + '\')">🧾 Separar</button>'
             : '<button class="btn btn-secondary btn-sm" onclick="abrirPickerSeparacao(\'' + ag.id + '\')">✏️ Ajustar</button>') +
           (ag.separado
-            ? '<button class="btn btn-primary btn-sm" onclick="realizarSessao(\'' + ag.id + '\',0)">✓ Realizar</button>'
+            ? '<button class="btn btn-primary btn-sm" onclick="realizarSessao(\'' + ag.id + '\',0)">✓ Realizar</button>' +
+              '<button style="background:#E7F7EE;border:1px solid #7DB87D;color:#276749;border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer" onclick="enviarWhatsappSeparacao(\'' + ag.id + '\')">📱 WhatsApp</button>'
             : '') +
         '</div>' +
       '</div>' +
