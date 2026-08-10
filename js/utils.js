@@ -125,6 +125,7 @@ function showSection(id) {
   if (id === 'atendimentos') renderServiceChips();
   if (id === 'dashboard') renderDashboard();
   if (id === 'agenda') renderAgenda();
+  if (id === 'pedidosSeparados') renderPedidosSeparados();
   if (id === 'festas') renderFestas();
   if (id === 'materiais') renderMateriais();
   if (id === 'despAdm') renderDespAdm();
@@ -141,6 +142,7 @@ function renderAll() {
   renderDespExtra();
   renderTemas();
   renderAgenda();
+  renderPedidosSeparados();
   updateBadges();
 }
 
@@ -154,6 +156,7 @@ function updateBadges() {
   _set('badgeDespExtra', db.despExtra.length);
   _set('badgeTemas',     (db.temas||[]).length);
   _set('badgeAgenda',    db.agenda.length);
+  _set('badgePedidosSeparados', db.agenda.filter(function(a){ return !a.concluido && !a.separado; }).length);
 }
 
 function toggleSidebar() {
