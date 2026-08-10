@@ -39,6 +39,7 @@
   <div class="nav-group-label">PRINCIPAL</div>
   <div class="nav-tab active" onclick="showSection('dashboard')">📊 Dashboard <span class="nav-badge" id="badgeAtend">0</span></div>
   <div class="nav-tab" onclick="showSection('agenda')">📅 Agenda <span class="nav-badge" id="badgeAgenda">0</span></div>
+  <div class="nav-tab" onclick="showSection('pedidosSeparados')">🧾 Pedidos Separados <span class="nav-badge" id="badgePedidosSeparados">0</span></div>
   <div class="nav-tab" onclick="showSection('atendimentos')">✨ Atendimentos <span class="nav-badge" id="badgeAtend2">0</span></div>
 
   <div class="nav-group-label">GESTÃO</div>
@@ -162,6 +163,19 @@
       <button class="agenda-btn" onclick="setAgendaFiltro('realizados',this)">Realizados</button>
     </div>
     <div id="agendaLista"></div>
+  </section>
+
+  <!-- ===================== PEDIDOS SEPARADOS ===================== -->
+  <section id="sec-pedidosSeparados" class="section">
+    <h2>Pedidos Separados</h2>
+    <p class="section-sub">SEPARAÇÃO FÍSICA DE MATERIAIS ANTES DA FESTA</p>
+    <div class="agenda-filtros">
+      <input id="psepBuscaCliente" placeholder="Buscar cliente..." onkeyup="renderPedidosSeparados()">
+      <button class="agenda-btn active" onclick="setPsepFiltro('pendentes',this)">Pendentes</button>
+      <button class="agenda-btn" onclick="setPsepFiltro('separados',this)">Separados</button>
+      <button class="agenda-btn" onclick="setPsepFiltro('tudo',this)">Tudo</button>
+    </div>
+    <div id="pedidosSeparadosLista"></div>
   </section>
 
   <!-- ===================== ATENDIMENTOS ===================== -->
@@ -369,6 +383,7 @@
 <script src="js/agenda.js"></script>
 <script src="js/calendario.js"></script>
 <script src="js/temas.js"></script>
+<script src="js/pedidosSeparados.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>
