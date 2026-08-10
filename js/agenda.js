@@ -32,15 +32,11 @@ async function salvarAgendamento() {
     obs: document.getElementById('ag-obs').value,
     sinalAtendId: null,
     concluido: false,
-    atendimentoId: null
+    atendimentoId: null,
+    separado: false,
+    materiaisSeparados: {}
   };
   db.agenda.push(novo);
-
-  const matsReservados = [];
-  Object.entries(novo.materiais).forEach(([matId, qtd]) => {
-    const m = db.materiais.find(x => x.id === matId);
-    if (m) { m.qtd = Math.max(0, parseInt(m.qtd) - parseInt(qtd)); matsReservados.push(m); }
-  });
 
   if (novo.sinal > 0) {
     const sinalAtend = {
@@ -59,7 +55,6 @@ async function salvarAgendamento() {
 
   saveData(); renderAll(); limparFormAgenda();
   await dbInserir('agenda', novo);
-  for (const m of matsReservados) await dbAtualizar('materiais', m);
   showToast('Agendamento criado!');
 }
 
@@ -131,7 +126,7 @@ function renderAgenda() {
     <div class="card" id="agcard-${ag.id}" style="border-left:4px solid ${cor.border};margin-bottom:1rem${ag.concluido?';opacity:0.75':''}">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
         <div>
-          <strong style="font-size:15px">${ag.cliente}</strong> ${ag.concluido ? '<span class="badge-pill badge-ativo" style="font-size:10px">Concluído</span>' : ''}
+          <strong style="font-size:15px">${ag.cliente}</strong> ${ag.concluido ? '<span class="badge-pill badge-ativo" style="font-size:10px">Concluído</span>' : ''} ${ag.separado ? '<span class="badge-pill badge-ativo" style="font-size:10px">📦 Separado</span>' : '<span class="badge-pill badge-inativo" style="font-size:10px">🔲 Não separado</span>'}
           <div style="font-size:12px;color:var(--text-light)">${srvNome}${tema ? ' · 🎨 '+tema.nome : ''}</div>
         </div>
         <div style="display:flex;gap:6px;align-items:center">
@@ -142,6 +137,7 @@ function renderAgenda() {
             <option value="personalizado" ${ag.statusCor==='personalizado'?'selected':''}>🟣 Personalizado</option>
             <option value="credito" ${ag.statusCor==='credito'?'selected':''}>🟠 Crédito</option>
           </select>
+          ${!ag.concluido ? `<button class="btn btn-edit" onclick="separarPedido('${ag.id}')">🧾 Separar</button>` : ''}
           <button class="btn btn-edit" onclick="abrirEditarAgenda('${ag.id}')">✏️</button>
           <button class="btn btn-edit" onclick="enviarWhatsappAgenda('${ag.id}')">💬</button>
           <button class="btn btn-danger" onclick="excluirAgendamento('${ag.id}')">✕</button>
@@ -281,7 +277,7 @@ function realizarSessao(agId, idx) {
   const saldo = Math.max(0, totalFestas - sinal);
 
   selectedServicos = [...(ag.servicoIds||[])];
-  selectedMateriais = {...(ag.materiais||{})};
+  selectedMateriais = Object.keys(ag.materiaisSeparados||{}).length ? {...ag.materiaisSeparados} : {...(ag.materiais||{})};
   document.getElementById('atend-cliente').value = ag.cliente;
   document.getElementById('atend-data').value = ag.sessoes[idx].data;
   document.getElementById('atend-valor').value = saldo.toFixed(2);
