@@ -24,10 +24,12 @@ async function registrarAtendimento() {
   };
   db.atendimentos.push(novo);
 
+  const agOrigemParaCheck = _agendaPendenteOrigem ? db.agenda.find(x => x.id === _agendaPendenteOrigem.agId) : null;
+  const estoqueJaDescontado = !!(agOrigemParaCheck && agOrigemParaCheck.separado);
   const matsAtualizados = [];
-  if (!_agendaPendenteOrigem) {
-    // Só desconta agora se o atendimento NÃO veio de um agendamento
-    // (se veio, o estoque já foi reservado na hora de criar o agendamento)
+  if (!estoqueJaDescontado) {
+    // Só desconta agora se o estoque ainda não foi baixado na etapa de Separação de Pedido
+    // (se já foi separado, o desconto já aconteceu lá — evita baixa duplicada)
     Object.entries(selectedMateriais).forEach(([matId, qtd]) => {
       const m = db.materiais.find(x => x.id === matId);
       if (m) { m.qtd = Math.max(0, parseInt(m.qtd) - parseInt(qtd)); matsAtualizados.push(m); }
