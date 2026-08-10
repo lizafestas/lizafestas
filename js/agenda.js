@@ -5,6 +5,8 @@
 let agendaFiltroAtual = 'tudo';
 let agBuscaClienteAtual = '';
 let _agendaPendenteOrigem = null; // {agId, idx, statusCor}
+let _agFotosTemaDisponiveis = [];   // fotos do tema selecionado no formulário (após busca)
+let _agFotosTemaSelecionadas = [];  // fotos marcadas pra anexar ao agendamento {id,nome,url}
 
 async function salvarAgendamento() {
   const cliente = document.getElementById('ag-cliente').value.trim();
@@ -34,7 +36,8 @@ async function salvarAgendamento() {
     concluido: false,
     atendimentoId: null,
     separado: false,
-    materiaisSeparados: {}
+    materiaisSeparados: {},
+    fotosTema: [..._agFotosTemaSelecionadas]
   };
   db.agenda.push(novo);
 
@@ -64,10 +67,77 @@ function limparFormAgenda() {
   });
   var stEl = document.getElementById('ag-status-cor'); if (stEl) stEl.value = 'reservado';
   var temaEl = document.getElementById('ag-tema'); if (temaEl) temaEl.value = '';
+  _agFotosTemaDisponiveis = [];
+  _agFotosTemaSelecionadas = [];
+  var fotosWrap = document.getElementById('agFotosTemaWrap'); if (fotosWrap) fotosWrap.innerHTML = '';
   selectedServicos = [];
   selectedMateriais = {};
   setToday();
   renderServiceChips();
+}
+
+// ===================== FOTOS DO TEMA (seleção do kit ao criar o agendamento) =====================
+async function _onAgTemaSelecionado() {
+  var temaId = document.getElementById('ag-tema').value;
+  var wrap = document.getElementById('agFotosTemaWrap');
+  _agFotosTemaSelecionadas = [];
+  _agFotosTemaDisponiveis = [];
+  if (!wrap) return;
+  if (!temaId) { wrap.innerHTML = ''; return; }
+
+  wrap.innerHTML = '<div style="font-size:12px;color:var(--text-light)">Carregando fotos do tema...</div>';
+  try {
+    var fotos = await supaBuscarFotosTema(temaId);
+    _agFotosTemaDisponiveis = fotos || [];
+    if (!_agFotosTemaDisponiveis.length) {
+      wrap.innerHTML = '<div style="font-size:12px;color:var(--text-light)">Este tema não tem fotos cadastradas.</div>';
+      return;
+    }
+    wrap.innerHTML = '<label style="font-size:10px;color:var(--text-light);text-transform:uppercase;letter-spacing:1px">Fotos do kit — selecione as que representam o que foi alugado</label>' +
+      '<div class="chips-wrap" style="margin-top:6px">' +
+      _agFotosTemaDisponiveis.map(function(f) {
+        return '<div style="position:relative;width:70px;cursor:pointer" onclick="_toggleAgFotoTema(\'' + f.id + '\')">' +
+          '<img id="agfoto-img-' + f.id + '" src="' + f.url + '" style="width:70px;height:70px;object-fit:cover;border-radius:8px;border:2px solid var(--border)">' +
+          '</div>';
+      }).join('') + '</div>';
+  } catch (e) {
+    wrap.innerHTML = '<div style="font-size:12px;color:var(--danger)">Erro ao carregar fotos do tema.</div>';
+    addLog('WARN', 'Erro ao buscar fotos do tema: ' + e.message);
+  }
+}
+
+function _toggleAgFotoTema(fotoId) {
+  var foto = _agFotosTemaDisponiveis.find(function(f) { return f.id === fotoId; });
+  if (!foto) return;
+  var idx = _agFotosTemaSelecionadas.findIndex(function(f) { return f.id === fotoId; });
+  var el = document.getElementById('agfoto-img-' + fotoId);
+  if (idx >= 0) {
+    _agFotosTemaSelecionadas.splice(idx, 1);
+    if (el) el.style.borderColor = 'var(--border)';
+  } else {
+    _agFotosTemaSelecionadas.push(foto);
+    if (el) el.style.borderColor = 'var(--rose)';
+  }
+}
+
+function verFotosTemaAgenda(agId) {
+  var ag = db.agenda.find(function(x) { return x.id === agId; });
+  if (!ag || !(ag.fotosTema || []).length) { showToast('Nenhuma foto anexada a este agendamento.'); return; }
+
+  var existente = document.getElementById('modal-fotos-ag');
+  if (existente) existente.remove();
+
+  var modal = document.createElement('div');
+  modal.className = 'modal';
+  modal.id = 'modal-fotos-ag';
+  modal.innerHTML = '<div class="modal-box" style="max-width:600px">' +
+    '<div class="modal-header"><span>🖼️ Fotos do kit — ' + ag.cliente + '</span>' +
+    '<button onclick="document.getElementById(\'modal-fotos-ag\').remove()">✕</button></div>' +
+    '<div class="modal-body" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px">' +
+    ag.fotosTema.map(function(f) {
+      return '<img src="' + f.url + '" style="width:100%;height:120px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">';
+    }).join('') + '</div></div>';
+  document.body.appendChild(modal);
 }
 
 function _populateTemaSelect() {
@@ -138,6 +208,7 @@ function renderAgenda() {
             <option value="credito" ${ag.statusCor==='credito'?'selected':''}>🟠 Crédito</option>
           </select>
           ${!ag.concluido ? `<button class="btn btn-edit" onclick="separarPedido('${ag.id}')">🧾 Separar</button>` : ''}
+          ${(ag.fotosTema||[]).length ? `<button class="btn btn-edit" onclick="verFotosTemaAgenda('${ag.id}')">🖼️ Ver Fotos (${ag.fotosTema.length})</button>` : ''}
           <button class="btn btn-edit" onclick="abrirEditarAgenda('${ag.id}')">✏️</button>
           <button class="btn btn-edit" onclick="enviarWhatsappAgenda('${ag.id}')">💬</button>
           <button class="btn btn-danger" onclick="excluirAgendamento('${ag.id}')">✕</button>
