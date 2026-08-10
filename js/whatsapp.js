@@ -23,6 +23,26 @@ function enviarWhatsappAgenda(agId) {
   abrirWhatsapp(ag.telefone, msg);
 }
 
+function enviarWhatsappSeparacao(agId) {
+  const ag = db.agenda.find(x=>x.id===agId);
+  if (!ag) { showToast('Agendamento não encontrado.'); return; }
+
+  const festasNomes = (ag.servicoIds||[]).map(id=>{ const f=db.festas.find(x=>x.id===id); return f?f.nome:null; }).filter(Boolean).join(' + ');
+  const tema = ag.temaId ? db.temas.find(t=>t.id===ag.temaId) : null;
+  const materiaisTxt = Object.entries(ag.materiaisSeparados||{}).map(([id,q])=>{
+    const m = db.materiais.find(x=>x.id===id);
+    return m ? '• '+m.nome+' — '+q+' '+(m.unidade||'un') : null;
+  }).filter(Boolean).join('\n');
+
+  const msg = `Olá ${ag.cliente}! 🎉\n\nSegue os detalhes da sua locação:\n\n🎈 Festa: ${festasNomes||'—'}`
+    + (tema ? `\n🎨 Tema: ${tema.nome}` : '')
+    + (ag.dataRetirada ? `\n📦 Retirada: ${fmtDate(ag.dataRetirada)}${ag.horaRetirada?' às '+ag.horaRetirada:''}` : '')
+    + (materiaisTxt ? `\n\n📋 Materiais separados:\n${materiaisTxt}` : '')
+    + `\n\nQualquer dúvida estou à disposição!`;
+
+  abrirWhatsapp(ag.telefone, msg);
+}
+
 function abrirWhatsapp(telefone, mensagem) {
   const tel = _limparTelefone(telefone);
   if (!tel) { showToast('Telefone não cadastrado para este cliente.'); return; }
