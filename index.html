@@ -116,7 +116,7 @@
         <div class="form-group"><label>Hora retirada</label><input type="time" id="ag-hora-retirada"></div>
         <div class="form-group"><label>Sinal (R$)</label><input type="number" id="ag-sinal" step="0.01"></div>
         <div class="form-group"><label>Tema</label>
-          <select id="ag-tema"><option value="">Nenhum</option></select>
+          <select id="ag-tema" onchange="_onAgTemaSelecionado()"><option value="">Nenhum</option></select>
         </div>
         <div class="form-group"><label>Status</label>
           <select id="ag-status-cor">
@@ -128,6 +128,7 @@
           </select>
         </div>
       </div>
+      <div id="agFotosTemaWrap" style="margin-bottom:0.75rem"></div>
       <div class="form-group"><label>Festas</label><input id="ag-servico-busca" placeholder="Buscar festa..." onkeyup="renderServiceChips()"></div>
       <div id="serviceChips" class="chips-wrap"></div>
       <div class="form-group"><label>Materiais</label><input id="ag-material-busca" placeholder="Buscar material..." onkeyup="renderServiceChips()"></div>
