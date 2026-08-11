@@ -63,7 +63,7 @@ async function salvarAgendamento() {
   var _agIdCriado = novo.id;
   var _btnWhatsAg = document.createElement('button');
   _btnWhatsAg.textContent = '📱 Enviar Confirmação no WhatsApp';
-  _btnWhatsAg.style.cssText = 'background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);color:white;border-radius:6px;padding:2px 10px;font-size:11px;cursor:pointer;margin-left:4px';
+  _btnWhatsAg.style.cssText = 'background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);color:white;border-radius:6px;padding:2px 10px;font-size:11px;cursor:pointer;margin-left:4px;pointer-events:auto';
   _btnWhatsAg.onclick = function () { enviarWhatsappAgenda(_agIdCriado); };
   var _tAg = document.getElementById('toast');
   if (_tAg) {
