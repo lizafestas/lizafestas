@@ -115,8 +115,11 @@
         <div class="form-group"><label>Data de retirada</label><input type="date" id="ag-data-retirada"></div>
         <div class="form-group"><label>Hora retirada</label><input type="time" id="ag-hora-retirada"></div>
         <div class="form-group"><label>Sinal (R$)</label><input type="number" id="ag-sinal" step="0.01"></div>
-        <div class="form-group"><label>Tema</label>
-          <select id="ag-tema" onchange="_onAgTemaSelecionado()"><option value="">Nenhum</option></select>
+        <div class="form-group tema-combo-wrap" style="position:relative">
+          <label>Tema</label>
+          <input type="text" id="ag-tema-busca" placeholder="Buscar tema..." autocomplete="off" onkeyup="_filtrarTemaCombo('ag')" onfocus="_filtrarTemaCombo('ag')">
+          <select id="ag-tema" onchange="_onAgTemaSelecionado()" style="display:none"><option value="">Nenhum</option></select>
+          <div id="ag-tema-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:50;background:#fff;border:1px solid var(--border);border-radius:8px;max-height:220px;overflow-y:auto;box-shadow:0 4px 12px rgba(0,0,0,0.12);margin-top:2px"></div>
         </div>
         <div class="form-group"><label>Status</label>
           <select id="ag-status-cor">
