@@ -85,6 +85,13 @@ async function _onAgTemaSelecionado() {
   if (!wrap) return;
   if (!temaId) { wrap.innerHTML = ''; return; }
 
+  // Pré-seleciona nas Festas as que já estão vinculadas a esse tema (evita a Liza clicar de novo)
+  var tema = db.temas.find(function(t) { return t.id === temaId; });
+  if (tema && (tema.festaIds || []).length) {
+    selectedServicos = [...tema.festaIds];
+    renderServiceChips();
+  }
+
   wrap.innerHTML = '<div style="font-size:12px;color:var(--text-light)">Carregando fotos do tema...</div>';
   try {
     var fotos = await supaBuscarFotosTema(temaId);
