@@ -18,8 +18,18 @@ function enviarWhatsappAtend(id) {
 function enviarWhatsappAgenda(agId) {
   const ag = db.agenda.find(x=>x.id===agId);
   if (!ag) { showToast('Agendamento não encontrado.'); return; }
-  const srvNome = _agServicos(ag);
-  const msg = `Olá ${ag.cliente}! 🎉\n\nLembrete do seu agendamento:\n🎈 ${srvNome}\n${ag.dataRetirada ? '📦 Retirada: '+fmtDate(ag.dataRetirada)+(ag.horaRetirada?' às '+ag.horaRetirada:'') : ''}\n\nQualquer dúvida estou à disposição!`;
+
+  const festasNomes = (ag.servicoIds||[]).map(id=>{ const f=db.festas.find(x=>x.id===id); return f?f.nome:null; }).filter(Boolean).join(' + ') || _agServicos(ag);
+  const tema = ag.temaId ? db.temas.find(t=>t.id===ag.temaId) : null;
+  const dataSessao = ag.sessoes && ag.sessoes[0] ? ag.sessoes[0].data : null;
+
+  const msg = `Olá ${ag.cliente}! 🎉\n\nConfirmando os detalhes da sua locação:\n\n🎈 Festa: ${festasNomes||'—'}`
+    + (tema ? `\n🎨 Tema: ${tema.nome}` : '')
+    + (dataSessao ? `\n📅 Data: ${fmtDate(dataSessao)}` : '')
+    + (ag.dataRetirada ? `\n📦 Retirada: ${fmtDate(ag.dataRetirada)}${ag.horaRetirada?' às '+ag.horaRetirada:''}` : '')
+    + (ag.obs ? `\n📝 Observações: ${ag.obs}` : '')
+    + `\n\nQualquer dúvida estou à disposição!`;
+
   abrirWhatsapp(ag.telefone, msg);
 }
 
