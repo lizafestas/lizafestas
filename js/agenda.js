@@ -67,6 +67,7 @@ function limparFormAgenda() {
   });
   var stEl = document.getElementById('ag-status-cor'); if (stEl) stEl.value = 'reservado';
   var temaEl = document.getElementById('ag-tema'); if (temaEl) temaEl.value = '';
+  var temaBuscaEl = document.getElementById('ag-tema-busca'); if (temaBuscaEl) temaBuscaEl.value = '';
   _agFotosTemaDisponiveis = [];
   _agFotosTemaSelecionadas = [];
   var fotosWrap = document.getElementById('agFotosTemaWrap'); if (fotosWrap) fotosWrap.innerHTML = '';
@@ -126,6 +127,42 @@ function _toggleAgFotoTema(fotoId) {
     if (el) el.style.borderColor = 'var(--rose)';
   }
 }
+
+// ===================== COMBO DE BUSCA DE TEMA (form de criação e modal de edição) =====================
+function _filtrarTemaCombo(prefix) {
+  var inputEl = document.getElementById(prefix + '-tema-busca');
+  var dropdown = document.getElementById(prefix + '-tema-dropdown');
+  if (!inputEl || !dropdown) return;
+  var busca = (inputEl.value || '').toLowerCase();
+  var lista = db.temas.filter(function(t) { return !busca || t.nome.toLowerCase().includes(busca); }).slice(0, 60);
+  var itens = '<div onclick="_selecionarTemaCombo(\'' + prefix + '\',\'\',\'\')" style="padding:8px 10px;font-size:13px;cursor:pointer;border-bottom:1px solid var(--border);color:var(--text-light)">Nenhum</div>';
+  itens += lista.length
+    ? lista.map(function(t) {
+        return '<div onclick="_selecionarTemaCombo(\'' + prefix + '\',\'' + t.id + '\',\'' + t.nome.replace(/'/g, "\\'") + '\')" style="padding:8px 10px;font-size:13px;cursor:pointer;border-bottom:1px solid #f5eef0">' + t.nome + '</div>';
+      }).join('')
+    : '<div style="padding:8px 10px;font-size:12px;color:var(--text-light)">Nenhum tema encontrado</div>';
+  dropdown.innerHTML = itens;
+  dropdown.style.display = 'block';
+}
+
+function _selecionarTemaCombo(prefix, temaId, temaNome) {
+  var inputEl = document.getElementById(prefix + '-tema-busca');
+  var sel = document.getElementById(prefix + '-tema');
+  var dropdown = document.getElementById(prefix + '-tema-dropdown');
+  if (inputEl) inputEl.value = temaId ? temaNome : '';
+  if (dropdown) dropdown.style.display = 'none';
+  if (sel) {
+    sel.value = temaId;
+    sel.dispatchEvent(new Event('change'));
+  }
+}
+
+document.addEventListener('click', function(e) {
+  document.querySelectorAll('[id$="-tema-dropdown"]').forEach(function(d) {
+    var wrapper = d.closest('.tema-combo-wrap');
+    if (wrapper && !wrapper.contains(e.target)) d.style.display = 'none';
+  });
+});
 
 function verFotosTemaAgenda(agId) {
   var ag = db.agenda.find(function(x) { return x.id === agId; });
@@ -252,6 +289,7 @@ function abrirEditarAgenda(id) {
   const ag = db.agenda.find(x => x.id === id);
   if (!ag) return;
   const temaOpcoes = '<option value="">Nenhum</option>' + db.temas.map(t => `<option value="${t.id}" ${ag.temaId===t.id?'selected':''}>${t.nome}</option>`).join('');
+  const temaAtualNome = ag.temaId ? ((db.temas.find(t => t.id === ag.temaId) || {}).nome || '') : '';
 
   const modal = document.createElement('div');
   modal.className = 'modal';
@@ -267,7 +305,12 @@ function abrirEditarAgenda(id) {
           <div class="form-group"><label>Data de retirada</label><input type="date" id="edag-data-retirada" value="${ag.dataRetirada||''}"></div>
           <div class="form-group"><label>Hora retirada</label><input type="time" id="edag-hora-retirada" value="${ag.horaRetirada||''}"></div>
           <div class="form-group"><label>Sinal (R$)</label><input type="number" step="0.01" id="edag-sinal" value="${ag.sinal||0}"></div>
-          <div class="form-group"><label>Tema</label><select id="edag-tema">${temaOpcoes}</select></div>
+          <div class="form-group tema-combo-wrap" style="position:relative">
+            <label>Tema</label>
+            <input type="text" id="edag-tema-busca" value="${temaAtualNome}" placeholder="Buscar tema..." autocomplete="off" onkeyup="_filtrarTemaCombo('edag')" onfocus="_filtrarTemaCombo('edag')">
+            <select id="edag-tema" style="display:none">${temaOpcoes}</select>
+            <div id="edag-tema-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:50;background:#fff;border:1px solid var(--border);border-radius:8px;max-height:220px;overflow-y:auto;box-shadow:0 4px 12px rgba(0,0,0,0.12);margin-top:2px"></div>
+          </div>
           <div class="form-group"><label>Status</label>
             <select id="edag-status">
               <option value="reservado" ${ag.statusCor==='reservado'?'selected':''}>🟢 Reservado</option>
