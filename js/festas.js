@@ -30,7 +30,7 @@ function renderFestas() {
     <tr class="data-row" onclick="toggleDetail('serv-${s.id}')">
       <td><span class="expand-icon" id="icon-serv-${s.id}">▶</span></td>
       <td><strong>${s.nome}</strong></td>
-      <td>${s.descricao||'—'}</td>
+      <td style="white-space:pre-line">${s.descricao||'—'}</td>
       <td>${fmtMoney(s.preco)}</td>
       <td><span class="badge-pill ${s.status==='ativo'?'badge-ativo':'badge-inativo'}">${s.status}</span></td>
       <td style="display:flex;gap:4px">
@@ -43,7 +43,7 @@ function renderFestas() {
         <div id="serv-view-${s.id}">
           <div class="detail-box">
             <div class="detail-field"><label>Nome</label><span>${s.nome}</span></div>
-            <div class="detail-field"><label>Descrição</label><span>${s.descricao||'—'}</span></div>
+            <div class="detail-field"><label>Descrição</label><span style="white-space:pre-line">${s.descricao||'—'}</span></div>
             <div class="detail-field"><label>Preço</label><span>${fmtMoney(s.preco)}</span></div>
             <div class="detail-field"><label>Status</label><span>${s.status}</span></div>
           </div>
@@ -52,7 +52,7 @@ function renderFestas() {
           <div class="edit-form-row">
             <div class="form-grid">
               <div class="form-group"><label>Nome</label><input type="text" id="eserv-nome-${s.id}" value="${s.nome}"></div>
-              <div class="form-group"><label>Descrição</label><input type="text" id="eserv-desc-${s.id}" value="${s.descricao||''}"></div>
+              <div class="form-group"><label>Descrição</label><textarea id="eserv-desc-${s.id}" rows="3" style="resize:vertical">${s.descricao||''}</textarea></div>
               <div class="form-group"><label>Preço (R$)</label><input type="number" id="eserv-preco-${s.id}" value="${s.preco}" step="0.01"></div>
               <div class="form-group"><label>Status</label>
                 <select id="eserv-status-${s.id}">
