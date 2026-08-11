@@ -58,7 +58,20 @@ async function salvarAgendamento() {
 
   saveData(); renderAll(); limparFormAgenda();
   await dbInserir('agenda', novo);
-  showToast('Agendamento criado!');
+
+  // Toast com botão de enviar confirmação da locação no WhatsApp
+  var _agIdCriado = novo.id;
+  var _btnWhatsAg = document.createElement('button');
+  _btnWhatsAg.textContent = '📱 Enviar Confirmação no WhatsApp';
+  _btnWhatsAg.style.cssText = 'background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);color:white;border-radius:6px;padding:2px 10px;font-size:11px;cursor:pointer;margin-left:4px';
+  _btnWhatsAg.onclick = function () { enviarWhatsappAgenda(_agIdCriado); };
+  var _tAg = document.getElementById('toast');
+  if (_tAg) {
+    _tAg.innerHTML = '📅 Agendamento criado! ';
+    _tAg.appendChild(_btnWhatsAg);
+    _tAg.classList.add('show');
+    setTimeout(function () { _tAg.classList.remove('show'); _tAg.innerHTML = ''; }, 7000);
+  }
 }
 
 function limparFormAgenda() {
