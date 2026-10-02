@@ -21,32 +21,49 @@ async function salvarAgendamento() {
   if (!cliente || !data) { showToast('Preencha cliente e data!'); return; }
   if (!selectedServicos.length) { showToast('Selecione ao menos uma festa!'); return; }
 
-  const sessoes = [{ data, hora: '', servicoIds: [...selectedServicos], status: 'pendente' }];
-  const novo = {
-    id: uid(), cliente, telefone,
-    sessoes,
+  const novo = await _criarAgendamento({
+    cliente, telefone, data, dataRetirada, horaRetirada,
+    sinal: parseFloat(sinal || 0),
+    temaId, statusCor,
+    obs: document.getElementById('ag-obs').value,
     servicoIds: [...selectedServicos],
     materiais: {...selectedMateriais},
-    temaId,
-    dataRetirada, horaRetirada,
-    sinal: parseFloat(sinal || 0),
-    statusCor,
-    obs: document.getElementById('ag-obs').value,
+    fotosTema: [..._agFotosTemaSelecionadas]
+  });
+  limparFormAgenda();
+  _toastAgendaCriada(novo.id);
+}
+
+// Núcleo da criação de agendamento — usado pelo formulário da Agenda
+// e pelo botão "Cadastrar" de Clientes → Solicitações do Cliente.
+// Mesma regra de sinal de sempre: sinal > 0 gera atendimento SINAL.
+async function _criarAgendamento(d) {
+  const sessoes = [{ data: d.data, hora: '', servicoIds: [...(d.servicoIds||[])], status: 'pendente' }];
+  const novo = {
+    id: uid(), cliente: d.cliente, telefone: d.telefone || '',
+    sessoes,
+    servicoIds: [...(d.servicoIds||[])],
+    materiais: {...(d.materiais||{})},
+    temaId: d.temaId || null,
+    dataRetirada: d.dataRetirada || '', horaRetirada: d.horaRetirada || '',
+    sinal: parseFloat(d.sinal || 0) || 0,
+    statusCor: d.statusCor || 'reservado',
+    obs: d.obs || '',
     sinalAtendId: null,
     concluido: false,
     atendimentoId: null,
     separado: false,
     materiaisSeparados: {},
-    fotosTema: [..._agFotosTemaSelecionadas]
+    fotosTema: [...(d.fotosTema||[])]
   };
   db.agenda.push(novo);
 
   if (novo.sinal > 0) {
     const sinalAtend = {
-      id: uid(), cliente: novo.cliente, data: novo.dataRetirada || data,
+      id: uid(), cliente: novo.cliente, data: novo.dataRetirada || d.data,
       servicoIds: [...novo.servicoIds], materiais: {},
       valor: novo.sinal, pagto: 'pix',
-      obs: `Sinal recebido referente à festa de ${fmtDate(data)}.`,
+      obs: `Sinal recebido referente à festa de ${fmtDate(d.data)}.`,
       statusCor: novo.statusCor,
       agendaOrigemId: null,
       isSinal: true
@@ -56,15 +73,17 @@ async function salvarAgendamento() {
     novo.sinalAtendId = sinalAtend.id;
   }
 
-  saveData(); renderAll(); limparFormAgenda();
+  saveData(); renderAll();
   await dbInserir('agenda', novo);
+  return novo;
+}
 
-  // Toast com botão de enviar confirmação da locação no WhatsApp
-  var _agIdCriado = novo.id;
+// Toast com botão de enviar confirmação da locação no WhatsApp
+function _toastAgendaCriada(agId) {
   var _btnWhatsAg = document.createElement('button');
   _btnWhatsAg.textContent = '📱 Enviar Confirmação no WhatsApp';
   _btnWhatsAg.style.cssText = 'background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);color:white;border-radius:6px;padding:2px 10px;font-size:11px;cursor:pointer;margin-left:4px;pointer-events:auto';
-  _btnWhatsAg.onclick = function () { enviarWhatsappAgenda(_agIdCriado); };
+  _btnWhatsAg.onclick = function () { enviarWhatsappAgenda(agId); };
   var _tAg = document.getElementById('toast');
   if (_tAg) {
     _tAg.innerHTML = '📅 Agendamento criado! ';
