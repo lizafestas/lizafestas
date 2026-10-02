@@ -12,6 +12,8 @@ async function init() {
   renderAll();
   updateHeaderDate();
 
+  if (typeof iniciarAlertaClientes === 'function') iniciarAlertaClientes();
+
   var secaoSalva = localStorage.getItem('lizafestas_secao') || 'dashboard';
   showSection(secaoSalva);
 
