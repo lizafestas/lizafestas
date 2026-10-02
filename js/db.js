@@ -10,7 +10,8 @@ let db = {
   despAdm: [],
   despExtra: [],
   agenda: [],
-  temas: []
+  temas: [],
+  clientes: []
 };
 
 let currentPeriod = 'hoje';
@@ -65,19 +66,21 @@ async function _supaDelete(tabela, id) {
 
 var _TABELAS = {
   festas: 'festas', materiais: 'materiais', atendimentos: 'atendimentos',
-  despAdm: 'desp_adm', despExtra: 'desp_extra', agenda: 'agenda', temas: 'temas'
+  despAdm: 'desp_adm', despExtra: 'desp_extra', agenda: 'agenda', temas: 'temas',
+  clientes: 'clientes'
 };
 
 async function loadData() {
   var raw = localStorage.getItem('lizafestas_db');
   if (raw) { try { db = JSON.parse(raw); } catch(e) {} }
-  ['festas','materiais','atendimentos','despAdm','despExtra','agenda','temas'].forEach(k => { if (!db[k]) db[k] = []; });
+  ['festas','materiais','atendimentos','despAdm','despExtra','agenda','temas','clientes'].forEach(k => { if (!db[k]) db[k] = []; });
 
   try {
     _atualizarStatusSync('carregando');
-    const [festas, materiais, atendimentos, despAdm, despExtra, agenda, temas] = await Promise.all([
+    const [festas, materiais, atendimentos, despAdm, despExtra, agenda, temas, clientes] = await Promise.all([
       _supaSelect('festas'), _supaSelect('materiais'), _supaSelect('atendimentos'),
-      _supaSelect('desp_adm'), _supaSelect('desp_extra'), _supaSelect('agenda'), _supaSelectTemasLeve()
+      _supaSelect('desp_adm'), _supaSelect('desp_extra'), _supaSelect('agenda'), _supaSelectTemasLeve(),
+      _supaSelect('clientes')
     ]);
 
     db.festas = festas.map(_fromRowFesta);
@@ -87,6 +90,7 @@ async function loadData() {
     db.despExtra = despExtra.map(_fromRowDespExtra);
     db.agenda = agenda.map(_fromRowAgenda);
     db.temas = temas.map(_fromRowTema);
+    db.clientes = clientes.map(_fromRowCliente);
 
     // Fotos de temas não vão pro cache local (base64 é pesado — só localStorage.setItem já quebra com dezenas de fotos).
     // Elas continuam sendo buscadas sob demanda do Supabase (ver supaBuscarFotosTema).
@@ -98,7 +102,7 @@ async function loadData() {
     var now = new Date().toLocaleString('pt-BR');
     localStorage.setItem('lizafestas_lastsync', now);
     _atualizarStatusSync('ok', now);
-    addLog('INFO', '☁️ Dados carregados de todas as tabelas — ' + db.atendimentos.length + ' atend, ' + db.agenda.length + ' agend, ' + db.temas.length + ' temas');
+    addLog('INFO', '☁️ Dados carregados de todas as tabelas — ' + db.atendimentos.length + ' atend, ' + db.agenda.length + ' agend, ' + db.temas.length + ' temas, ' + db.clientes.length + ' clientes');
   } catch(e) {
     addLog('WARN', '⚠️ Erro ao carregar do Supabase: ' + e.message);
     _atualizarStatusSync('offline');
@@ -130,7 +134,11 @@ function _toRowAgenda(a) { return { id: a.id, cliente: a.cliente, telefone: a.te
 function _fromRowTema(r) { return { id: r.id, nome: r.nome, descricao: r.descricao, festaIds: r.festa_ids||[], fotos: (r.fotos !== undefined ? r.fotos : null) }; }
 function _toRowTema(t) { return { id: t.id, nome: t.nome, descricao: t.descricao, festa_ids: t.festaIds||[], fotos: t.fotos||[] }; }
 
-var _TO_ROW = { festas:_toRowFesta, materiais:_toRowMaterial, atendimentos:_toRowAtendimento, despAdm:_toRowDespAdm, despExtra:_toRowDespExtra, agenda:_toRowAgenda, temas:_toRowTema };
+// Clientes: Informações (página pública /cliente/) + Solicitações (Liza)
+function _fromRowCliente(r) { return { id: r.id, criadoEm: r.criado_em, nome: r.nome, cpf: r.cpf, endereco: r.endereco_festa||'', telefone: r.telefone, temaTexto: r.tema_texto||'', dataFesta: r.data_festa, dataRetirada: r.data_retirada||null, horaRetirada: r.hora_retirada||'', sinalInformado: parseFloat(r.sinal_informado||0)||0, visto: !!r.visto, solTemaId: r.sol_tema_id||null, solFotosTema: r.sol_fotos_tema||[], solFestaIds: r.sol_festa_ids||[], solDataRetirada: r.sol_data_retirada||null, solSinal: (r.sol_sinal === null || r.sol_sinal === undefined) ? null : parseFloat(r.sol_sinal), solStatusCor: r.sol_status_cor||'reservado', agendaId: r.agenda_id||null }; }
+function _toRowCliente(c) { return { id: c.id, nome: c.nome, cpf: c.cpf, endereco_festa: c.endereco||null, telefone: c.telefone, tema_texto: c.temaTexto||null, data_festa: c.dataFesta||null, data_retirada: c.dataRetirada||null, hora_retirada: c.horaRetirada||null, sinal_informado: parseFloat(c.sinalInformado||0)||0, visto: !!c.visto, sol_tema_id: c.solTemaId||null, sol_fotos_tema: c.solFotosTema||[], sol_festa_ids: c.solFestaIds||[], sol_data_retirada: c.solDataRetirada||null, sol_sinal: (c.solSinal === null || c.solSinal === undefined || c.solSinal === '') ? null : parseFloat(c.solSinal), sol_status_cor: c.solStatusCor||'reservado', agenda_id: c.agendaId||null, atualizado_em: new Date().toISOString() }; }
+
+var _TO_ROW = { festas:_toRowFesta, materiais:_toRowMaterial, atendimentos:_toRowAtendimento, despAdm:_toRowDespAdm, despExtra:_toRowDespExtra, agenda:_toRowAgenda, temas:_toRowTema, clientes:_toRowCliente };
 
 // Cópia do db pra gravar no localStorage sem as fotos dos temas (base64 pesado — não cabe no cache)
 function _dbParaCache() {
