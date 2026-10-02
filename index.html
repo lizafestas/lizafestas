@@ -3,190 +3,415 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Liza Figueiredo · Festas & Decoração — Cadastro do Cliente</title>
-<style>
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family: 'Segoe UI', Arial, sans-serif; background:#FDF7F9; color:#2C1A22; font-size:14px; }
-  .header { background:linear-gradient(135deg,#3D1A28,#6B3550); padding:2rem; text-align:center; color:white; }
-  .header h1 { font-size:24px; letter-spacing:3px; margin-bottom:4px; font-weight:300; }
-  .header h2 { font-size:12px; letter-spacing:4px; color:#F0C4D0; text-transform:uppercase; font-weight:400; }
-  .container { max-width:720px; margin:2rem auto; padding:0 1rem 4rem; }
-  .aviso { background:#FFF8E1; border-left:4px solid #C4708A; padding:1rem 1.2rem; border-radius:6px; margin-bottom:2rem; font-size:13px; color:#5D4037; line-height:1.6; }
-  .section-title { background:linear-gradient(135deg,#3D1A28,#6B3550); color:#F0C4D0; padding:0.6rem 1.2rem; border-radius:6px; font-size:11px; letter-spacing:3px; text-transform:uppercase; font-weight:600; margin:2rem 0 1rem; text-align:center; }
-  .form-group { margin-bottom:1rem; }
-  .form-group label { display:block; font-size:11px; font-weight:600; color:#6B3550; letter-spacing:1px; text-transform:uppercase; margin-bottom:4px; }
-  .form-group input, .form-group textarea {
-    width:100%; padding:0.6rem 0.8rem; border:1px solid #F0D8E0; border-radius:8px;
-    font-family:inherit; font-size:16px; background:white; outline:none; color:#2C1A22;
-  }
-  .form-group input:focus, .form-group textarea:focus { border-color:#C4708A; }
-  .form-group input.erro { border-color:#E53935; background:#FFF5F5; }
-  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
-  @media(max-width:500px){ .form-row{ grid-template-columns:1fr; } }
-  .aviso-retirada { margin-top:6px; font-size:12px; color:#6B3550; background:#FBEFF3; border-radius:6px; padding:6px 10px; }
-  .btn-enviar { width:100%; padding:1rem; background:linear-gradient(135deg,#C4708A,#9E4A65); color:white; border:none; border-radius:10px; font-size:16px; font-weight:600; letter-spacing:1px; cursor:pointer; margin-top:2rem; font-family:inherit; transition:opacity 0.2s; }
-  .btn-enviar:hover { opacity:0.9; }
-  .btn-enviar:disabled { opacity:0.6; cursor:not-allowed; }
-  .sucesso { display:none; background:#E8F5E9; border:2px solid #4CAF50; border-radius:12px; padding:2rem; text-align:center; margin-top:2rem; }
-  .sucesso h2 { color:#2E7D32; font-size:22px; margin-bottom:0.5rem; }
-  .sucesso p { color:#388E3C; font-size:14px; line-height:1.6; }
-  .toast { position:fixed; bottom:2rem; left:50%; transform:translateX(-50%) translateY(20px); background:#3D1A28; color:#F0C4D0; padding:0.8rem 1.5rem; border-radius:8px; font-size:13px; z-index:9999; opacity:0; transition:all 0.3s; pointer-events:none; max-width:320px; text-align:center; }
-  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
-  .campo-obrigatorio { color:#C4708A; }
-</style>
+<title>Liza Festas</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="stylesheet" href="css/global.css">
+<link rel="stylesheet" href="css/sidebar.css">
+<link rel="stylesheet" href="css/dashboard.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/calendario.css">
+<link rel="stylesheet" href="css/clientes.css">
 </head>
 <body>
 
-<div class="header">
-  <h1>Liza Figueiredo</h1>
-  <h2>Festas & Decoração · Cadastro do Cliente</h2>
+<!-- ===================== LOGIN ===================== -->
+<div id="loginScreen" style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#1C1C1E;position:fixed;inset:0;z-index:9999">
+  <div style="background:white;border-radius:16px;padding:2.5rem;max-width:360px;width:100%">
+    <h2 style="font-family:'Cormorant Garamond',serif;text-align:center;margin-bottom:1.5rem;letter-spacing:2px">LIZA FESTAS</h2>
+    <input id="loginUser" placeholder="Usuário" style="width:100%;padding:0.6rem 0.9rem;margin-bottom:0.75rem;border:1px solid var(--border);border-radius:8px;box-sizing:border-box">
+    <input id="loginPass" type="password" placeholder="Senha" style="width:100%;padding:0.6rem 0.9rem;margin-bottom:0.75rem;border:1px solid var(--border);border-radius:8px;box-sizing:border-box" onkeydown="if(event.key==='Enter')fazerLogin()">
+    <div id="loginErro" style="display:none;color:var(--danger);font-size:12px;margin-bottom:0.75rem">Usuário ou senha inválidos.</div>
+    <button class="btn btn-primary" style="width:100%" onclick="fazerLogin()">Entrar</button>
+  </div>
 </div>
 
-<div class="container">
-
-  <div id="formWrap">
-    <div class="aviso">
-      🎉 <strong>Olá!</strong> Preencha os campos abaixo para reservarmos a sua festa.<br><br>
-      Ao clicar em <strong>"Enviar Cadastro"</strong>, seus dados são enviados diretamente para a Liza. <strong>Não é necessário copiar nem enviar nada pelo WhatsApp!</strong> ✨
+<!-- ===================== APP ===================== -->
+<div id="appSidebar" class="app-sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">LF</div>
+    <div>
+      <div class="sidebar-title">Liza Figueiredo</div>
+      <div class="sidebar-subtitle">FESTAS &amp; EVENTOS</div>
     </div>
-
-    <div class="section-title">Informações do Cliente</div>
-
-    <div class="form-group">
-      <label>Nome completo <span class="campo-obrigatorio">*</span></label>
-      <input type="text" id="c-nome" placeholder="Seu nome completo" maxlength="120">
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label>CPF <span class="campo-obrigatorio">*</span></label>
-        <input type="text" id="c-cpf" placeholder="000.000.000-00" inputmode="numeric" oninput="mascaraCpf(this)">
-      </div>
-      <div class="form-group">
-        <label>Telefone / WhatsApp <span class="campo-obrigatorio">*</span></label>
-        <input type="tel" id="c-telefone" placeholder="(xx) xxxxx-xxxx" inputmode="numeric" oninput="mascaraTel(this)">
-      </div>
-    </div>
-    <div class="form-group">
-      <label>Endereço da festa</label>
-      <input type="text" id="c-endereco" placeholder="Rua, número, bairro, cidade" maxlength="250">
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label>Tema da decoração</label>
-        <input type="text" id="c-tema" placeholder="Ex: Safari, Princesas..." maxlength="120">
-      </div>
-      <div class="form-group">
-        <label>Data da festa <span class="campo-obrigatorio">*</span></label>
-        <input type="date" id="c-data-festa">
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label>Data da retirada do kit</label>
-        <input type="date" id="c-data-retirada">
-      </div>
-      <div class="form-group">
-        <label>Horário da retirada do kit</label>
-        <input type="text" id="c-hora-retirada" placeholder="Ex: 09:00" maxlength="20">
-        <div class="aviso-retirada">🕗 Retirada das <strong>08h às 11h</strong>, na data combinada.</div>
-      </div>
-    </div>
-    <div class="form-group">
-      <label>Valor do sinal (R$)</label>
-      <input type="number" id="c-sinal" placeholder="0,00" step="0.01" min="0" inputmode="decimal">
-    </div>
-
-    <button class="btn-enviar" id="btnEnviar" onclick="enviarCadastro()">✅ Enviar Cadastro para a Liza</button>
+    <button onclick="toggleDrawer()" id="btnHamburger" class="btn-hamburger">☰</button>
   </div>
 
-  <div class="sucesso" id="sucesso">
-    <h2>🎉 Recebemos seu cadastro!</h2>
-    <p>Obrigada! A Liza já recebeu suas informações e vai entrar em contato para confirmar os detalhes da sua festa.</p>
+  <div class="nav-group-label">PRINCIPAL</div>
+  <div class="nav-tab active" onclick="showSection('dashboard')">📊 Dashboard <span class="nav-badge" id="badgeAtend">0</span></div>
+  <div class="nav-tab" onclick="showSection('agenda')">📅 Agenda <span class="nav-badge" id="badgeAgenda">0</span></div>
+  <div class="nav-tab" onclick="showSection('pedidosSeparados')">🧾 Pedidos Separados <span class="nav-badge" id="badgePedidosSeparados">0</span></div>
+  <div class="nav-tab" onclick="showSection('atendimentos')">✨ Atendimentos <span class="nav-badge" id="badgeAtend2">0</span></div>
+  <div class="nav-tab" onclick="showSection('clientes')">👥 Clientes <span class="nav-badge" id="badgeClientes">0</span></div>
+
+  <div class="nav-group-label">GESTÃO</div>
+  <div class="nav-tab" onclick="showSection('festas')">🎉 Festas <span class="nav-badge" id="badgeServ">0</span></div>
+  <div class="nav-tab" onclick="showSection('materiais')">🧴 Materiais <span class="nav-badge" id="badgeMat">0</span></div>
+  <div class="nav-tab" onclick="showSection('despAdm')">🏢 Desp. Adm. <span class="nav-badge" id="badgeDespAdm">0</span></div>
+  <div class="nav-tab" onclick="showSection('despExtra')">💸 Despesas <span class="nav-badge" id="badgeDespExtra">0</span></div>
+  <div class="nav-tab" onclick="showSection('temas')">🎨 Temas <span class="nav-badge" id="badgeTemas">0</span></div>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-user" onclick="fazerLogout()">
+      <div class="sidebar-avatar" id="sidebarAvatarLetter">L</div>
+      <span id="sidebarUserName">Liza</span>
+    </div>
   </div>
+</div>
+<div id="sidebarOverlay" class="sidebar-overlay" onclick="fecharDrawer()"></div>
+
+<div class="app-content">
+  <div class="app-topbar">
+    <button onclick="toggleSidebar()" class="btn-toggle-sidebar">☰</button>
+    <button onclick="toggleDrawer()" class="btn-hamburger-mobile">☰</button>
+    <span id="lastSave" style="font-size:12px;color:var(--text-light)"></span>
+    <span id="headerDate" style="margin-left:auto;font-size:13px"></span>
+    <button class="btn btn-secondary btn-sm" onclick="document.getElementById('log-panel').style.display='block'">📋 Relatório</button>
+    <button class="btn btn-secondary btn-sm" onclick="gerenciarUsuarios()">👥 Usuários</button>
+    <button class="btn btn-secondary btn-sm" onclick="exportData()">⬇ Backup</button>
+    <label class="btn btn-secondary btn-sm" style="cursor:pointer">⬆ Restaurar<input type="file" accept=".json" style="display:none" onchange="importData(event)"></label>
+  </div>
+
+  <!-- ===================== DASHBOARD ===================== -->
+  <section id="sec-dashboard" class="section active">
+    <h2>Dashboard</h2>
+    <p class="section-sub">VISÃO GERAL DAS FESTAS</p>
+    <div class="period-filters">
+      <button class="period-btn active" onclick="setPeriod('hoje',this)">Hoje</button>
+      <button class="period-btn" onclick="setPeriod('semana',this)">7 dias</button>
+      <button class="period-btn" onclick="setPeriod('mes',this)">Este mês</button>
+      <button class="period-btn" onclick="setPeriod('tudo',this)">Tudo</button>
+    </div>
+    <div id="dashCards" class="summary-cards"></div>
+
+    <div class="panel">
+      <div class="panel-header">🎨 Status dos Agendamentos</div>
+      <div id="statusAgendaPanel"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">🎉 Festas do Dia</div>
+      <div id="sessoesHojePanel"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">🏆 Top 5 Festas</div>
+      <div id="top5Panel"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">💳 Pagamentos</div>
+      <div id="pagtoPanel"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">🕐 Últimos Atendimentos</div>
+      <div id="ultimosAtend"></div>
+    </div>
+  </section>
+
+  <!-- ===================== AGENDA ===================== -->
+  <section id="sec-agenda" class="section">
+    <h2>Agenda</h2>
+    <div class="form-card">
+      <div class="form-grid">
+        <div class="form-group"><label>Cliente</label><input id="ag-cliente"></div>
+        <div class="form-group"><label>Telefone</label><input id="ag-telefone" onkeyup="mascaraTel(this)"></div>
+        <div class="form-group"><label>Data</label><input type="date" id="ag-data"></div>
+        <div class="form-group"><label>Data de retirada</label><input type="date" id="ag-data-retirada"></div>
+        <div class="form-group"><label>Hora retirada</label><input type="time" id="ag-hora-retirada"></div>
+        <div class="form-group"><label>Sinal (R$)</label><input type="number" id="ag-sinal" step="0.01"></div>
+        <div class="form-group tema-combo-wrap" style="position:relative">
+          <label>Tema</label>
+          <input type="text" id="ag-tema-busca" placeholder="Buscar tema..." autocomplete="off" onkeyup="_filtrarTemaCombo('ag')" onfocus="_filtrarTemaCombo('ag')">
+          <select id="ag-tema" onchange="_onAgTemaSelecionado()" style="display:none"><option value="">Nenhum</option></select>
+          <div id="ag-tema-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:50;background:#fff;border:1px solid var(--border);border-radius:8px;max-height:220px;overflow-y:auto;box-shadow:0 4px 12px rgba(0,0,0,0.12);margin-top:2px"></div>
+        </div>
+        <div class="form-group"><label>Status</label>
+          <select id="ag-status-cor">
+            <option value="reservado">🟢 Reservado</option>
+            <option value="alugado">🔴 Alugado</option>
+            <option value="devolveu">⚫ Devolveu</option>
+            <option value="personalizado">🟣 Personalizado</option>
+            <option value="credito">🟠 Crédito</option>
+          </select>
+        </div>
+      </div>
+      <div id="agFotosTemaWrap" style="margin-bottom:0.75rem"></div>
+      <div class="form-group"><label>Festas</label><input id="ag-servico-busca" placeholder="Buscar festa..." onkeyup="renderServiceChips()"></div>
+      <div id="serviceChips" class="chips-wrap"></div>
+      <div class="form-group"><label>Materiais</label><input id="ag-material-busca" placeholder="Buscar material..." onkeyup="renderServiceChips()"></div>
+      <div id="materialChipsAgenda" class="chips-wrap"></div>
+      <div id="ag-material-qtd-wrap"></div>
+      <div class="form-group"><label>Observações</label><textarea id="ag-obs"></textarea></div>
+      <button class="btn btn-primary" onclick="salvarAgendamento()">+ Agendar</button>
+      <button class="btn btn-secondary" onclick="limparFormAgenda()">Limpar</button>
+    </div>
+
+    <div class="panel" style="margin-bottom:1.25rem">
+      <div class="panel-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <button class="btn btn-secondary btn-sm" onclick="calNavegar(-1)">‹</button>
+          <span id="calTitulo" style="font-weight:600"></span>
+          <button class="btn btn-secondary btn-sm" onclick="calNavegar(1)">›</button>
+          <button class="btn btn-secondary btn-sm" onclick="calHoje()">Hoje</button>
+        </div>
+        <div style="display:flex;gap:4px">
+          <button id="calBtnMes" class="agenda-btn active" onclick="calSetView('mes')">Mês</button>
+          <button id="calBtnSem" class="agenda-btn" onclick="calSetView('semana')">Semana</button>
+        </div>
+      </div>
+      <div id="calGrid" style="padding:1rem"></div>
+    </div>
+
+    <div class="agenda-filtros">
+      <input id="agBuscaCliente" placeholder="Buscar cliente..." onkeyup="renderAgenda()">
+      <input type="date" id="agFiltroRetirada" onchange="renderAgenda()" title="Filtrar por data de retirada">
+      <button class="agenda-btn active" onclick="setAgendaFiltro('tudo',this)">Tudo</button>
+      <button class="agenda-btn" onclick="setAgendaFiltro('hoje',this)">Hoje</button>
+      <button class="agenda-btn" onclick="setAgendaFiltro('pendentes',this)">Pendentes</button>
+      <button class="agenda-btn" onclick="setAgendaFiltro('realizados',this)">Realizados</button>
+    </div>
+    <div id="agendaLista"></div>
+  </section>
+
+  <!-- ===================== PEDIDOS SEPARADOS ===================== -->
+  <section id="sec-pedidosSeparados" class="section">
+    <h2>Pedidos Separados</h2>
+    <p class="section-sub">SEPARAÇÃO FÍSICA DE MATERIAIS ANTES DA FESTA</p>
+    <div class="agenda-filtros">
+      <input id="psepBuscaCliente" placeholder="Buscar cliente..." onkeyup="renderPedidosSeparados()">
+      <button class="agenda-btn active" onclick="setPsepFiltro('pendentes',this)">Pendentes</button>
+      <button class="agenda-btn" onclick="setPsepFiltro('separados',this)">Separados</button>
+      <button class="agenda-btn" onclick="setPsepFiltro('tudo',this)">Tudo</button>
+    </div>
+    <div id="pedidosSeparadosLista"></div>
+  </section>
+
+  <!-- ===================== CLIENTES ===================== -->
+  <section id="sec-clientes" class="section">
+    <h2>Clientes</h2>
+    <p class="section-sub">CADASTROS RECEBIDOS PELA PÁGINA DO CLIENTE</p>
+    <div style="display:flex;gap:6px;margin-bottom:1rem;border-bottom:2px solid var(--border)">
+      <span style="padding:8px 14px;font-size:13px;font-weight:600;color:var(--rose-dark);border-bottom:2px solid var(--rose);margin-bottom:-2px">📋 Informações do Cliente</span>
+    </div>
+    <div class="agenda-filtros">
+      <input id="cliBusca" placeholder="Buscar por nome, telefone ou CPF..." onkeyup="renderClientes()">
+      <button class="agenda-btn active" data-filtro="todos" onclick="setCliFiltro('todos',this)">Todos</button>
+      <button class="agenda-btn" data-filtro="novos" onclick="setCliFiltro('novos',this)">🆕 Novos</button>
+      <button class="agenda-btn" data-filtro="pendentes" onclick="setCliFiltro('pendentes',this)">⏳ Sem agenda</button>
+      <button class="agenda-btn" data-filtro="agendados" onclick="setCliFiltro('agendados',this)">📅 Agendados</button>
+    </div>
+    <div id="clientesLista"></div>
+  </section>
+
+  <!-- ===================== ATENDIMENTOS ===================== -->
+  <section id="sec-atendimentos" class="section">
+    <h2>Atendimentos</h2>
+    <div class="form-card">
+      <div class="form-grid">
+        <div class="form-group"><label>Cliente</label><input id="atend-cliente"></div>
+        <div class="form-group"><label>Data</label><input type="date" id="atend-data"></div>
+        <div class="form-group"><label>Valor (R$)</label><input type="number" id="atend-valor" step="0.01"></div>
+        <div class="form-group"><label>Pagamento</label>
+          <select id="atend-pagto">
+            <option value="pix">PIX</option><option value="dinheiro">Dinheiro</option>
+            <option value="cartao_debito">Cartão Débito</option><option value="cartao_credito">Cartão Crédito</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label>Festas</label><input id="atend-servico-busca" placeholder="Buscar festa..." onkeyup="renderServiceChips()"></div>
+      <div id="serviceChips2" class="chips-wrap"></div>
+      <div class="form-group"><label>Materiais usados</label><input id="atend-material-busca" placeholder="Buscar material..." onkeyup="renderServiceChips()"></div>
+      <div id="materialChips" class="chips-wrap"></div>
+      <div id="atend-material-qtd-wrap"></div>
+      <div class="form-group"><label>Observações</label><textarea id="atend-obs" placeholder="Observações do atendimento..."></textarea></div>
+      <button class="btn btn-primary" onclick="registrarAtendimento()">✓ Registrar Atendimento</button>
+      <button class="btn btn-secondary" onclick="limparFormAtendimento()">Limpar</button>
+    </div>
+
+    <div class="filtros-row">
+      <input id="filtAtendCliente" placeholder="Buscar cliente..." onkeyup="renderAtendimentos()">
+      <input type="date" id="filtAtendDataIni" onchange="renderAtendimentos()">
+      <input type="date" id="filtAtendDataFim" onchange="renderAtendimentos()">
+      <select id="filtAtendPagto" onchange="renderAtendimentos()">
+        <option value="">Todos pagamentos</option>
+        <option value="pix">PIX</option><option value="dinheiro">Dinheiro</option>
+        <option value="cartao_debito">Débito</option><option value="cartao_credito">Crédito</option>
+      </select>
+    </div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th></th><th>Data</th><th>Cliente</th><th>Festa</th><th>Status</th><th>Pagamento</th><th>Valor</th><th></th></tr></thead>
+      <tbody id="tbodyAtend"></tbody>
+    </table>
+    </div>
+  </section>
+
+  <!-- ===================== FESTAS ===================== -->
+  <section id="sec-festas" class="section">
+    <h2>Festas</h2>
+    <div class="form-card">
+      <div class="form-grid">
+        <div class="form-group"><label>Nome</label><input id="serv-nome"></div>
+        <div class="form-group"><label>Descrição</label><textarea id="serv-descricao" rows="3" style="resize:vertical"></textarea></div>
+        <div class="form-group"><label>Preço (R$)</label><input type="number" id="serv-preco" step="0.01"></div>
+        <div class="form-group"><label>Status</label>
+          <select id="serv-status"><option value="ativo">Ativo</option><option value="inativo">Inativo</option></select>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="salvarFesta()">+ Cadastrar Festa</button>
+      <button class="btn btn-secondary" onclick="limparFormFesta()">Limpar</button>
+    </div>
+    <div class="filtros-row">
+      <input id="filtServNome" placeholder="Buscar festa..." onkeyup="renderFestas()">
+      <select id="filtServStatus" onchange="renderFestas()">
+        <option value="">Todos status</option><option value="ativo">Ativo</option><option value="inativo">Inativo</option>
+      </select>
+    </div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th></th><th>Nome</th><th>Descrição</th><th>Preço</th><th>Status</th><th></th></tr></thead>
+      <tbody id="tbodyServ"></tbody>
+    </table>
+    </div>
+  </section>
+
+  <!-- ===================== MATERIAIS ===================== -->
+  <section id="sec-materiais" class="section">
+    <h2>Materiais</h2>
+    <div class="form-card">
+      <div class="form-grid">
+        <div class="form-group"><label>Nome</label><input id="mat-nome"></div>
+        <div class="form-group"><label>Fornecedor</label><input id="mat-fornecedor"></div>
+        <div class="form-group"><label>Custo (R$)</label><input type="number" id="mat-custo" step="0.01"></div>
+        <div class="form-group"><label>Quantidade</label><input type="number" id="mat-qtd"></div>
+        <div class="form-group"><label>Estoque mínimo</label><input type="number" id="mat-min"></div>
+        <div class="form-group"><label>Unidade</label>
+          <select id="mat-unidade"><option value="un">un</option><option value="ml">ml</option><option value="g">g</option><option value="L">L</option><option value="kg">kg</option><option value="cx">cx</option></select>
+        </div>
+        <div class="form-group"><label>Grade</label><input id="mat-grade" placeholder="Ex: P, M, G"></div>
+      </div>
+      <button class="btn btn-primary" onclick="salvarMaterial()">+ Cadastrar Material</button>
+      <button class="btn btn-secondary" onclick="limparFormMat()">Limpar</button>
+    </div>
+    <input id="filtMatNome" placeholder="Buscar material..." onkeyup="renderMateriais()">
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th></th><th>Nome</th><th>Fornecedor</th><th>Custo</th><th>Estoque</th><th>Grade</th><th>Mín.</th><th>Situação</th><th></th></tr></thead>
+      <tbody id="tbodyMat"></tbody>
+    </table>
+    </div>
+  </section>
+
+  <!-- ===================== DESPESAS ADMINISTRATIVAS ===================== -->
+  <section id="sec-despAdm" class="section">
+    <h2>Despesas Administrativas</h2>
+    <div class="form-card">
+      <div class="form-grid">
+        <div class="form-group"><label>Descrição</label><input id="dadm-desc"></div>
+        <div class="form-group"><label>Categoria</label><input id="dadm-categoria"></div>
+        <div class="form-group"><label>Valor (R$)</label><input type="number" id="dadm-valor" step="0.01"></div>
+        <div class="form-group"><label>Data</label><input type="date" id="dadm-data"></div>
+      </div>
+      <button class="btn btn-primary" onclick="salvarDespAdm()">+ Registrar</button>
+    </div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Valor</th><th></th></tr></thead>
+      <tbody id="tbodyDespAdm"></tbody>
+    </table>
+    </div>
+  </section>
+
+  <!-- ===================== DESPESAS EXTRAS ===================== -->
+  <section id="sec-despExtra" class="section">
+    <h2>Despesas</h2>
+    <div class="form-card">
+      <div class="form-grid">
+        <div class="form-group"><label>Descrição</label><input id="dext-desc"></div>
+        <div class="form-group"><label>Valor (R$)</label><input type="number" id="dext-valor" step="0.01"></div>
+        <div class="form-group"><label>Data</label><input type="date" id="dext-data"></div>
+      </div>
+      <button class="btn btn-primary" onclick="salvarDespExtra()">+ Registrar</button>
+    </div>
+    <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Data</th><th>Descrição</th><th>Valor</th><th></th></tr></thead>
+      <tbody id="tbodyDespExtra"></tbody>
+    </table>
+    </div>
+  </section>
+
+  <!-- ===================== TEMAS ===================== -->
+  <section id="sec-temas" class="section">
+    <h2>Temas</h2>
+    <div class="form-card">
+      <div class="form-grid">
+        <div class="form-group"><label>Nome do tema</label><input id="tema-nome"></div>
+        <div class="form-group"><label>Descrição</label><input id="tema-descricao"></div>
+      </div>
+      <div class="form-group">
+        <label>Festas incluídas</label>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="abrirSeletorFestasTema()">🎉 Selecionar festas (<span id="temaFestasCount">0</span>)</button>
+      </div>
+      <div class="form-group">
+        <label>Fotos do tema</label>
+        <input type="file" id="tema-fotos-input" accept="image/*" multiple onchange="onTemaFotosSelecionadas(event)">
+        <div id="temaFotosPreview" class="chips-wrap" style="margin-top:8px"></div>
+      </div>
+      <button class="btn btn-primary" onclick="salvarTema()">+ Cadastrar Tema</button>
+      <button class="btn btn-secondary" onclick="limparFormTema()">Limpar</button>
+    </div>
+
+    <div class="filtros-row">
+      <input id="filtTemaNome" placeholder="Buscar tema..." onkeyup="renderTemas()">
+      <select id="filtTemaFesta" onchange="renderTemas()">
+        <option value="">Todas as festas</option>
+      </select>
+    </div>
+    <div id="temasLista" style="margin-top:1rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem"></div>
+  </section>
 
 </div>
 
-<div class="toast" id="toast"></div>
+<!-- ===================== MODAL: STATUS AGENDA ===================== -->
+<div id="statusAgendaModal" class="modal" style="display:none">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span id="statusAgendaModalTitle"></span>
+      <button onclick="document.getElementById('statusAgendaModal').style.display='none'">✕</button>
+    </div>
+    <div id="statusAgendaModalBody" class="modal-body"></div>
+  </div>
+</div>
 
-<script>
-var SUPA_URL = 'https://fbgocszoesdavtdrjmuo.supabase.co';
-var SUPA_KEY = 'sb_publishable_hI1Inc85BF9nggP2rAtpCw_D_S39XrI';
+<!-- ===================== ALERTA GLOBAL: NOVOS CLIENTES ===================== -->
+<div id="alertaClientesBanner" class="alerta-cli-banner"></div>
 
-function uid() { return Date.now().toString(36) + Math.random().toString(36).substr(2); }
-function val(id) { return (document.getElementById(id).value || '').replace(/[<>]/g, '').trim(); }
-function showToast(msg) {
-  var t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(function(){ t.classList.remove('show'); }, 3200);
-}
-function mascaraCpf(el) {
-  var v = el.value.replace(/\D/g,'').substring(0,11);
-  v = v.replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})$/,'$1-$2');
-  el.value = v;
-}
-function mascaraTel(el) {
-  var v = el.value.replace(/\D/g,'').substring(0,11);
-  if (v.length <= 10) v = v.replace(/(\d{2})(\d{4})(\d{0,4})/,'($1) $2-$3');
-  else v = v.replace(/(\d{2})(\d{5})(\d{0,4})/,'($1) $2-$3');
-  el.value = v;
-}
-function cpfValido(cpf) {
-  cpf = (cpf || '').replace(/\D/g,'');
-  if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
-  for (var t = 9; t < 11; t++) {
-    var s = 0;
-    for (var i = 0; i < t; i++) s += parseInt(cpf[i]) * (t + 1 - i);
-    var d = ((10 * s) % 11) % 10;
-    if (parseInt(cpf[t]) !== d) return false;
-  }
-  return true;
-}
-function marcarErro(id, erro) {
-  var el = document.getElementById(id);
-  if (el) el.classList.toggle('erro', !!erro);
-}
+<!-- ===================== TOAST / LOG ===================== -->
+<div id="toast" class="toast"></div>
+<div id="log-panel" class="log-panel" style="display:none">
+  <div class="log-header">
+    <span>📋 Relatório de Atividade</span>
+    <button onclick="toggleLog()">✕</button>
+  </div>
+  <div id="log-entries" class="log-entries"></div>
+</div>
 
-async function enviarCadastro() {
-  var nome = val('c-nome'), cpf = val('c-cpf'), tel = val('c-telefone'), dataFesta = val('c-data-festa');
-  marcarErro('c-nome', !nome); marcarErro('c-cpf', !cpfValido(cpf));
-  marcarErro('c-telefone', tel.replace(/\D/g,'').length < 10); marcarErro('c-data-festa', !dataFesta);
-
-  if (!nome || !cpf || !tel || !dataFesta) { showToast('Preencha os campos obrigatórios (*).'); return; }
-  if (!cpfValido(cpf)) { showToast('CPF inválido. Confira os números.'); return; }
-  if (tel.replace(/\D/g,'').length < 10) { showToast('Telefone inválido. Informe com DDD.'); return; }
-
-  var btn = document.getElementById('btnEnviar');
-  btn.disabled = true; btn.textContent = 'Enviando...';
-
-  var registro = {
-    id: uid(),
-    nome: nome,
-    cpf: cpf,
-    endereco_festa: val('c-endereco') || null,
-    telefone: tel,
-    tema_texto: val('c-tema') || null,
-    data_festa: dataFesta,
-    data_retirada: val('c-data-retirada') || null,
-    hora_retirada: val('c-hora-retirada') || null,
-    sinal_informado: parseFloat(val('c-sinal') || 0) || 0,
-    visto: false
-  };
-
-  try {
-    var resp = await fetch(SUPA_URL + '/rest/v1/clientes', {
-      method: 'POST',
-      headers: { 'Content-Type':'application/json', 'apikey':SUPA_KEY, 'Authorization':'Bearer ' + SUPA_KEY, 'Prefer':'return=minimal' },
-      body: JSON.stringify(registro)
-    });
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
-    document.getElementById('formWrap').style.display = 'none';
-    document.getElementById('sucesso').style.display = 'block';
-    window.scrollTo(0, 0);
-  } catch (e) {
-    btn.disabled = false; btn.textContent = '✅ Enviar Cadastro para a Liza';
-    showToast('Não foi possível enviar agora. Verifique sua internet e tente novamente.');
-  }
-}
-</script>
+<!-- ===================== SCRIPTS (ORDEM IMPORTA) ===================== -->
+<script src="js/config.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/db.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/festas.js"></script>
+<script src="js/materiais.js"></script>
+<script src="js/atendimentos.js"></script>
+<script src="js/financeiro.js"></script>
+<script src="js/whatsapp.js"></script>
+<script src="js/agenda.js"></script>
+<script src="js/calendario.js"></script>
+<script src="js/temas.js"></script>
+<script src="js/pedidosSeparados.js"></script>
+<script src="js/clientes.js"></script>
+<script src="js/alertaClientes.js"></script>
+<script src="js/app.js"></script>
 </body>
 </html>
