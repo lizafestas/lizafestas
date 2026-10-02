@@ -131,6 +131,7 @@ function showSection(id) {
   if (id === 'despAdm') renderDespAdm();
   if (id === 'despExtra') renderDespExtra();
   if (id === 'temas') renderTemas();
+  if (id === 'clientes') renderClientes();
 }
 
 function renderAll() {
@@ -143,6 +144,7 @@ function renderAll() {
   renderTemas();
   renderAgenda();
   renderPedidosSeparados();
+  if (typeof renderClientes === 'function') renderClientes();
   updateBadges();
 }
 
@@ -157,6 +159,10 @@ function updateBadges() {
   _set('badgeTemas',     (db.temas||[]).length);
   _set('badgeAgenda',    db.agenda.length);
   _set('badgePedidosSeparados', db.agenda.filter(function(a){ return !a.concluido && !a.separado; }).length);
+  var _cliNovos = (db.clientes||[]).filter(function(c){ return !c.visto; }).length;
+  _set('badgeClientes', _cliNovos);
+  var _bCli = document.getElementById('badgeClientes');
+  if (_bCli) _bCli.classList.toggle('nav-badge-alerta', _cliNovos > 0);
 }
 
 function toggleSidebar() {
