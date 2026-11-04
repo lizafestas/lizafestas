@@ -49,6 +49,7 @@ async function _criarAgendamento(d) {
     sinal: parseFloat(d.sinal || 0) || 0,
     statusCor: d.statusCor || 'reservado',
     obs: d.obs || '',
+    obsSolicitacao: d.obsSolicitacao || '',
     sinalAtendId: null,
     concluido: false,
     atendimentoId: null,
@@ -133,11 +134,12 @@ async function _onAgTemaSelecionado() {
       wrap.innerHTML = '<div style="font-size:12px;color:var(--text-light)">Este tema não tem fotos cadastradas.</div>';
       return;
     }
+    lbRegistrar('agDisp', _agFotosTemaDisponiveis);
     wrap.innerHTML = '<label style="font-size:10px;color:var(--text-light);text-transform:uppercase;letter-spacing:1px">Fotos do kit — selecione as que representam o que foi alugado</label>' +
       '<div class="chips-wrap" style="margin-top:6px">' +
-      _agFotosTemaDisponiveis.map(function(f) {
-        return '<div style="position:relative;width:70px;cursor:pointer" onclick="_toggleAgFotoTema(\'' + f.id + '\')">' +
-          '<img id="agfoto-img-' + f.id + '" src="' + f.url + '" style="width:70px;height:70px;object-fit:cover;border-radius:8px;border:2px solid var(--border)">' +
+      _agFotosTemaDisponiveis.map(function(f, i) {
+        return '<div class="lb-thumb-wrap" style="position:relative;width:70px;cursor:pointer" onclick="_toggleAgFotoTema(\'' + f.id + '\')">' + lbLupaHtml('agDisp', i) +
+          '<img id="agfoto-img-' + f.id + '" src="' + _fotoSrc(f) + '" style="width:70px;height:70px;object-fit:cover;border-radius:8px;border:2px solid var(--border)">' +
           '</div>';
       }).join('') + '</div>';
   } catch (e) {
@@ -210,8 +212,9 @@ function verFotosTemaAgenda(agId) {
     '<div class="modal-header"><span>🖼️ Fotos do kit — ' + ag.cliente + '</span>' +
     '<button onclick="document.getElementById(\'modal-fotos-ag\').remove()">✕</button></div>' +
     '<div class="modal-body" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px">' +
-    ag.fotosTema.map(function(f) {
-      return '<img src="' + f.url + '" style="width:100%;height:120px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">';
+    (lbRegistrar('agVer', ag.fotosTema), '') +
+    ag.fotosTema.map(function(f, i) {
+      return '<img class="lb-zoom" title="Clique para ampliar" onclick="abrirLightboxGaleria(\'agVer\',' + i + ')" src="' + _fotoSrc(f) + '" style="width:100%;height:120px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">';
     }).join('') + '</div></div>';
   document.body.appendChild(modal);
 }
@@ -296,6 +299,7 @@ function renderAgenda() {
       </div>
       <div style="margin-top:8px">${sessoesHtml}</div>
       ${ag.obs ? `<div style="margin-top:6px;font-size:12px;color:var(--text-light)">📝 ${ag.obs}</div>` : ''}
+      ${ag.obsSolicitacao ? `<div style="margin-top:6px;font-size:12px;background:var(--cream);border-left:3px solid var(--rose);border-radius:6px;padding:6px 10px;white-space:pre-line"><strong>💬 Obs. da Solicitação:</strong> ${_esc(ag.obsSolicitacao)}</div>` : ''}
     </div>`;
   }).join('');
 }
@@ -354,6 +358,7 @@ function abrirEditarAgenda(id) {
           </div>
         </div>
         <div class="form-group"><label>Observações</label><textarea id="edag-obs">${ag.obs||''}</textarea></div>
+        ${ag.obsSolicitacao ? `<div class="form-group" style="margin-top:0.5rem"><label>💬 Obs. da Solicitação (somente leitura)</label><div style="font-size:12px;background:var(--cream);border-radius:8px;padding:8px 10px;white-space:pre-line">${_esc(ag.obsSolicitacao)}</div><div style="font-size:11px;color:var(--text-light)">Altere em Clientes → Solicitações do Cliente.</div></div>` : ''}
         <p style="font-size:11px;color:var(--text-light);margin:0.5rem 0">Festas e materiais não são editáveis aqui — para trocar, exclua e crie um novo agendamento.</p>
         <div style="display:flex;gap:0.5rem;margin-top:0.5rem">
           <button class="btn btn-primary btn-sm" onclick="salvarEdicaoAgenda('${id}')">✓ Salvar</button>
