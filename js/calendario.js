@@ -231,6 +231,7 @@ function calAbrirDetalhe(agId, sessaoIdx) {
     '<div style="margin-bottom:0.5rem"><div class="cal-modal-label">Data</div><div style="font-size:13px;color:var(--text-mid)">' + fmtDate(s.data) + (s.hora ? ' às ' + s.hora + (s.horaFim ? ' - ' + s.horaFim : '') : '') + '</div></div>' +
     '<div style="margin-bottom:0.5rem"><div class="cal-modal-label">Status</div><div style="font-size:13px">' + statusLabel + '</div></div>' +
     (ag.obs ? '<div style="margin-bottom:0.5rem"><div class="cal-modal-label">Obs</div><div style="font-size:12px;color:var(--text-light)">' + ag.obs + '</div></div>' : '') +
+    (ag.obsSolicitacao ? '<div style="margin-bottom:0.5rem"><div class="cal-modal-label">Obs. da Solicitação</div><div style="font-size:12px;color:var(--text-light);white-space:pre-line">' + _esc(ag.obsSolicitacao) + '</div></div>' : '') +
     '<div class="cal-modal-actions">' +
     (!isRealizado ? '<button class="btn btn-primary btn-sm" onclick="document.getElementById(\'cal-detalhe-modal\').remove();realizarSessao(\'' + agId + '\',' + sessaoIdx + ')">✓ Realizar</button>' : '') +
     (!isRealizado ? '<button style="background:#E7F7EE;border:1px solid #7DB87D;color:#276749;border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer" onclick="document.getElementById(\'cal-detalhe-modal\').remove();enviarWhatsappAgenda(\'' + agId + '\')">📱 WhatsApp</button>' : '') +
