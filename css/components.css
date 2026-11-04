@@ -18,3 +18,22 @@
 
 .section { display: none; }
 .section.active { display: block; }
+
+/* ===== LIGHTBOX (fotos ampliadas) ===== */
+.liza-lightbox { position: fixed; inset: 0; z-index: 10050; background: rgba(0,0,0,0.92); display: none; align-items: center; justify-content: center; padding: 1rem; }
+.liza-lightbox img { max-width: 92vw; max-height: 86vh; object-fit: contain; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); user-select: none; -webkit-user-select: none; }
+.lb-btn { position: absolute; background: rgba(255,255,255,0.15); color: #fff; border: none; border-radius: 50%; width: 44px; height: 44px; font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.lb-btn:hover { background: rgba(255,255,255,0.3); }
+.lb-fechar { top: 14px; right: 14px; }
+.lb-prev { left: 14px; top: 50%; transform: translateY(-50%); font-size: 30px; }
+.lb-next { right: 14px; top: 50%; transform: translateY(-50%); font-size: 30px; }
+.lb-contador { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); color: #fff; font-size: 13px; background: rgba(0,0,0,0.4); padding: 4px 12px; border-radius: 20px; }
+.lb-contador:empty { display: none; }
+.lb-zoom { cursor: zoom-in; }
+.lb-thumb-wrap { position: relative; }
+.lb-lupa { position: absolute; bottom: 4px; right: 4px; width: 24px; height: 24px; padding: 0; border: none; border-radius: 50%; background: rgba(255,255,255,0.92); box-shadow: 0 1px 4px rgba(0,0,0,0.3); font-size: 12px; line-height: 24px; cursor: zoom-in; }
+.lb-lupa:hover { background: #fff; }
+@media (max-width: 640px) {
+  .lb-prev { left: 4px; } .lb-next { right: 4px; }
+  .lb-btn { width: 38px; height: 38px; }
+}
