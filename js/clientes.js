@@ -270,6 +270,10 @@ function _renderCliSol(cli) {
     '<div class="form-group"><label>Festas</label><input id="cli-festa-busca" placeholder="Buscar festa..." onkeyup="_cliRenderFestaChips()"></div>' +
     '<div id="cliFestaChips" class="chips-wrap"></div>' +
     '<div id="cliTotalFestas" style="font-size:12px;margin-bottom:1rem"></div>' +
+    '<div class="form-group" style="margin-bottom:1rem"><label>Observações</label>' +
+      '<textarea id="cli-sol-obs" rows="3" placeholder="Observações da solicitação...">' + _esc(cli.solObs || '') + '</textarea>' +
+      (ag ? '<div style="font-size:11px;color:var(--text-light);margin-top:2px">Vai para a Agenda como "💬 Obs. da Solicitação" (separada da observação da Agenda).</div>' : '') +
+    '</div>' +
     '<div id="cliSolAcoes" style="display:flex;gap:0.5rem;flex-wrap:wrap;padding-top:0.75rem;border-top:1px solid var(--border)"></div>';
 
   _cliRenderFotosResumo();
@@ -356,12 +360,13 @@ async function _cliAbrirSeletorFotos(temaId) {
     _cliFotosDisponiveis = (t && t.fotos) || [];
     if (!_cliFotosDisponiveis.length) { wrap.innerHTML = '<div style="font-size:12px;color:var(--text-light)">Este tema não tem fotos cadastradas.</div>'; return; }
     var selIds = _cliFotosSelecionadas.map(function (f) { return f.id; });
+    lbRegistrar('cliDisp', _cliFotosDisponiveis);
     wrap.innerHTML =
       '<label style="font-size:10px;color:var(--text-light);text-transform:uppercase;letter-spacing:1px">Fotos do kit — selecione as que representam o pedido</label>' +
       '<div class="chips-wrap" style="margin-top:6px">' +
-      _cliFotosDisponiveis.map(function (f) {
+      _cliFotosDisponiveis.map(function (f, i) {
         var sel = selIds.indexOf(f.id) >= 0;
-        return '<div style="width:70px;cursor:pointer" onclick="_cliToggleFoto(\'' + f.id + '\')">' +
+        return '<div class="lb-thumb-wrap" style="width:70px;cursor:pointer" onclick="_cliToggleFoto(\'' + f.id + '\')">' + lbLupaHtml('cliDisp', i) +
           '<img id="clifoto-img-' + f.id + '" src="' + _fotoSrc(f) + '" style="width:70px;height:70px;object-fit:cover;border-radius:8px;border:3px solid ' + (sel ? 'var(--rose)' : 'var(--border)') + '"></div>';
       }).join('') + '</div>' +
       '<button class="btn btn-secondary btn-sm" style="margin-top:6px" onclick="_cliRenderFotosResumo()">✓ Concluir seleção</button>';
@@ -407,7 +412,8 @@ function verFotosSelecionadasCliente() {
     '<div class="modal-header"><span>🖼️ Fotos do kit</span>' +
     '<button onclick="document.getElementById(\'modal-fotos-cli\').remove()">✕</button></div>' +
     '<div class="modal-body" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px">' +
-    fotos.map(function (f) { return '<img src="' + _fotoSrc(f) + '" style="width:100%;height:120px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">'; }).join('') +
+    (lbRegistrar('cliSel', fotos), '') +
+    fotos.map(function (f, i) { return '<img class="lb-zoom" title="Clique para ampliar" onclick="abrirLightboxGaleria(\'cliSel\',' + i + ')" src="' + _fotoSrc(f) + '" style="width:100%;height:120px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">'; }).join('') +
     '</div></div>';
   document.body.appendChild(modal);
   modal.addEventListener('click', function (e) { if (e.target === modal) modal.remove(); });
@@ -422,6 +428,8 @@ function _cliColetarSolicitacao(cli) {
   var s = (document.getElementById('cli-sol-sinal') || {}).value;
   cli.solSinal = (s === '' || s === undefined) ? null : (parseFloat(s) || 0);
   cli.solStatusCor = (document.getElementById('cli-sol-cor') || {}).value || 'reservado';
+  var obsEl = document.getElementById('cli-sol-obs');
+  if (obsEl) cli.solObs = _semTags(obsEl.value);
 }
 
 async function salvarSolicitacaoCliente(id) {
@@ -458,6 +466,7 @@ async function cadastrarAgendaCliente(id) {
     temaId: cli.solTemaId || null,
     statusCor: cli.solStatusCor || 'reservado',
     obs: _cliObsLinhas(cli).join('\n'),
+    obsSolicitacao: cli.solObs || '',
     servicoIds: cli.solFestaIds.slice(),
     materiais: {},
     fotosTema: (cli.solFotosTema || []).slice()
@@ -547,6 +556,7 @@ async function _sincronizarAgendaCliente(cli, automatico) {
   ag.temaId = cli.solTemaId || null;
   ag.fotosTema = (cli.solFotosTema || []).slice();
   ag.obs = _cliMesclarObs(ag.obs, cli);
+  if (cli.solObs !== undefined) ag.obsSolicitacao = cli.solObs || '';
 
   // Sinal (mesma regra do salvarEdicaoAgenda)
   var novoSinal = parseFloat(cli.solSinal || 0) || 0;
