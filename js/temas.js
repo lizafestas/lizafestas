@@ -105,9 +105,10 @@ function onTemaFotosSelecionadas(event) {
 function _renderTemaFotosPreview() {
   const wrap = document.getElementById('temaFotosPreview');
   if (!wrap) return;
-  wrap.innerHTML = _temaFotosNovas.map(f => `
+  lbRegistrar('temaNovas', _temaFotosNovas.map(f => f.previewUrl));
+  wrap.innerHTML = _temaFotosNovas.map((f, i) => `
     <div style="position:relative;width:70px">
-      <img src="${f.previewUrl}" style="width:70px;height:70px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">
+      <img class="lb-zoom" title="Clique para ampliar" onclick="abrirLightboxGaleria('temaNovas',${i})" src="${f.previewUrl}" style="width:70px;height:70px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">
       <button onclick="_removerFotoTemaTmp('${f.id}')" style="position:absolute;top:-6px;right:-6px;background:var(--danger);color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer">✕</button>
     </div>`).join('');
 }
@@ -297,9 +298,9 @@ function _renderModalFotosTema(t) {
     <div class="modal-box" style="max-width:600px">
       <div class="modal-header"><span>🖼️ Fotos — ${t.nome}</span><button onclick="document.getElementById('modal-fotos-tema').remove()">✕</button></div>
       <div class="modal-body" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px">
-        ${t.fotos.map(f => `
+        ${(lbRegistrar('temaVer', t.fotos), '')}${t.fotos.map((f, i) => `
           <div style="position:relative">
-            <img src="${_fotoSrc(f)}" style="width:100%;height:120px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">
+            <img class="lb-zoom" title="Clique para ampliar" onclick="abrirLightboxGaleria('temaVer',${i})" src="${_fotoSrc(f)}" style="width:100%;height:120px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">
             <button onclick="excluirFotoTema('${t.id}','${f.id}')" title="Excluir esta foto" style="position:absolute;top:6px;right:6px;background:var(--danger);color:#fff;border:none;border-radius:50%;width:24px;height:24px;font-size:12px;cursor:pointer">✕</button>
           </div>`).join('')}
       </div>
@@ -352,10 +353,11 @@ async function abrirEnvioWhatsappTema(temaId) {
   const t = await _garantirFotosTema(temaId);
   if (!t || !t.fotos.length) { showToast('Este tema não tem fotos anexadas.'); return; }
 
-  const opcoes = t.fotos.map(f => `
+  lbRegistrar('temaWhats', t.fotos);
+  const opcoes = t.fotos.map((f, i) => `
     <label style="display:flex;align-items:center;gap:8px;padding:6px 4px;border-bottom:1px solid #f0e8ea;font-size:13px;cursor:pointer">
       <input type="checkbox" name="fotoWhatsTema" value="${f.id}">
-      <img src="${_fotoSrc(f)}" style="width:40px;height:40px;object-fit:cover;border-radius:6px">
+      <span class="lb-thumb-wrap" style="display:inline-block;width:40px;height:40px"><img src="${_fotoSrc(f)}" style="width:40px;height:40px;object-fit:cover;border-radius:6px">${lbLupaHtml('temaWhats', i)}</span>
       ${f.nome}
     </label>`).join('');
 
