@@ -28,6 +28,7 @@ function enviarWhatsappAgenda(agId) {
     + (dataSessao ? `\n📅 Data: ${fmtDate(dataSessao)}` : '')
     + (ag.dataRetirada ? `\n📦 Retirada: ${fmtDate(ag.dataRetirada)}${ag.horaRetirada?' às '+ag.horaRetirada:''}` : '')
     + (ag.obs ? `\n📝 Observações: ${ag.obs}` : '')
+    + (ag.obsSolicitacao ? `\n💬 ${ag.obsSolicitacao}` : '')
     + `\n\nQualquer dúvida estou à disposição!`;
 
   abrirWhatsapp(ag.telefone, msg);
